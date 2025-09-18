@@ -1,6 +1,6 @@
 // Copyright 2024 Marina Usova
 
-#define EASY_EXAMPLE
+#define MATRIX
 #ifdef EASY_EXAMPLE
 
 #include <iostream>
@@ -35,3 +35,270 @@ int main() {
 }
 
 #endif  // EASY_EXAMPLE
+#ifdef MATRIX
+#include <iostream>
+#include "../lib_matrix/matrix.h"
+#include "../lib_mathvector/mathvector.h"
+#include "../lib_trianglematrix/trianglematrix.h"
+
+template <typename T>
+Matrix<T> matrix_user_input() {
+    int row, column;
+
+    std::cout << "Please, enter the size of matrix (row column): ";
+    std::cin >> row;
+    std::cin >> column;
+    try {
+        Matrix<T> baseMatrix(row, column);
+        std::cout << "Input matrix: " << std::endl;
+        std::cin >> baseMatrix;
+        return baseMatrix;
+    }
+    catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+        throw;
+    }
+}
+
+template <typename T>
+TriangleMatrix<T> trianglematrixUserInput() {
+    int row, column;
+
+    std::cout << "Please, enter the size of matrix (row column): ";
+    std::cin >> row;
+    std::cin >> column;
+    try {
+        TriangleMatrix<T> trMatrix(row, column);
+        std::cout << "Input matrix: " << std::endl;
+        std::cin >> trMatrix;
+        return trMatrix;
+    }
+    catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+        throw;
+    }
+}
+
+template <typename T>
+MathVector<T> vectorUserInput() {
+    int size;
+
+    std::cout << "Please, enter the size of vector: ";
+    std::cin >> size;
+    try {
+        MathVector<T> vector(size);
+        std::cout << "Input vector: " << std::endl;
+        std::cin >> vector;
+        return vector;
+    }
+    catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+        throw;
+    }
+}
+
+void matrixOperations() {
+    while (true) {
+        system("cls");
+        std::cout << "=== MATRIX OPERATIONS ===\n"
+            << "1. Matrix * Matrix\n"
+            << "2. Matrix * Vector\n"
+            << "3. Vector * Matrix\n"
+            << "4. Matrix + Matrix\n"
+            << "5. Matrix - Matrix\n"
+            << "0. Back to main menu" << std::endl;
+        std::cout << "Please choose an action: ";
+        int user_choice;
+        std::cin >> user_choice;
+
+        if (user_choice == 0) {
+            break;
+        }
+
+        Matrix<int> matrix_1;
+        Matrix<int> matrix_2;
+        Matrix<int> matrix_3;
+        MathVector<int> vector_1;
+        MathVector<int> vector_2;
+
+        switch (user_choice) {
+        case 1:
+            system("cls");
+            try {
+                matrix_1 = matrix_user_input<int>();
+                matrix_2 = matrix_user_input<int>();
+                matrix_3 = matrix_1 * matrix_2;
+                std::cout << "Answer:\n" << matrix_3;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        case 2:
+            system("cls");
+            try {
+                matrix_1 = matrix_user_input<int>();
+                vector_1 = vectorUserInput<int>();
+                vector_2 = matrix_1 * vector_1;
+                std::cout << "Answer:\n" << vector_2;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        case 3:
+            system("cls");
+            try {
+                vector_1 = vectorUserInput<int>();
+                matrix_1 = matrix_user_input<int>();
+                vector_2 = vector_1 * matrix_1;
+                std::cout << "Answer:\n" << vector_2;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        case 4:
+            system("cls");
+            try {
+                matrix_1 = matrix_user_input<int>();
+                matrix_2 = matrix_user_input<int>();
+                matrix_3 = matrix_1 + matrix_2;
+                std::cout << "Answer:\n" << matrix_3;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        case 5:
+            system("cls");
+            try {
+                matrix_1 = matrix_user_input<int>();
+                matrix_2 = matrix_user_input<int>();
+                matrix_3 = matrix_1 - matrix_2;
+                std::cout << "Answer:\n" << matrix_3;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        default:
+            std::cout << "Wrong Input. Try again!" << std::endl;
+            system("pause");
+            break;
+        }
+    }
+}
+
+void triangleMatrixOperations() {
+    while (true) {
+        system("cls");
+        std::cout << "=== TRIANGLE MATRIX OPERATIONS ===\n"
+            << "1. TriangleMatrix * TriangleMatrix\n"
+            << "2. TriangleMatrix + TriangleMatrix\n"
+            << "3. TriangleMatrix - TriangleMatrix\n"
+            << "0. Back to main menu" << std::endl;
+        std::cout << "Please choose an action: ";
+        int user_choice;
+        std::cin >> user_choice;
+
+        if (user_choice == 0) {
+            break;
+        }
+
+        TriangleMatrix<int> tr_matrix_1;
+        TriangleMatrix<int> tr_matrix_2;
+        TriangleMatrix<int> tr_matrix_3;
+
+        switch (user_choice) {
+        case 1:
+            system("cls");
+            try {
+                tr_matrix_1 = trianglematrixUserInput<int>();
+                tr_matrix_2 = trianglematrixUserInput<int>();
+                tr_matrix_3 = tr_matrix_1 * tr_matrix_2;
+                std::cout << "Answer:\n" << tr_matrix_3;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        case 2:
+            system("cls");
+            try {
+                tr_matrix_1 = trianglematrixUserInput<int>();
+                tr_matrix_2 = trianglematrixUserInput<int>();
+                tr_matrix_3 = tr_matrix_1 + tr_matrix_2;
+                std::cout << "Answer:\n" << tr_matrix_3;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        case 3:
+            system("cls");
+            try {
+                tr_matrix_1 = trianglematrixUserInput<int>();
+                tr_matrix_2 = trianglematrixUserInput<int>();
+                tr_matrix_3 = tr_matrix_1 - tr_matrix_2;
+                std::cout << "Answer:\n" << tr_matrix_3;
+                system("pause");
+            }
+            catch (const std::exception& e) {
+                std::cout << e.what() << std::endl;
+                system("pause");
+            }
+            break;
+        default:
+            std::cout << "Wrong Input. Try again!" << std::endl;
+            system("pause");
+            break;
+        }
+    }
+}
+
+
+void main() {
+    while (true) {
+        system("cls");
+        std::cout << "=== MAIN MENU ===\n"
+            << "1. Regular Matrix Operations\n"
+            << "2. Triangle Matrix Operations\n"
+            << "0. Exit" << std::endl;
+        std::cout << "Please choose matrix type: ";
+        int user_choice;
+        std::cin >> user_choice;
+
+        if (user_choice == 0) {
+            break;
+        }
+
+        switch (user_choice) {
+        case 1:
+            matrixOperations();
+            break;
+        case 2:
+            triangleMatrixOperations();
+            break;
+        default:
+            std::cout << "Wrong Input. Try again!" << std::endl;
+            system("pause");
+            break;
+        }
+    }
+}
+#endif // MATRIX
