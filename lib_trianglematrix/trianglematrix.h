@@ -22,16 +22,13 @@ private:
 
 template <typename T>
 TriangleMatrix<T>::TriangleMatrix() : _m(0), _n(0) {
-	;
 }
 template <typename T>
 TriangleMatrix<T>::TriangleMatrix(size_t m, size_t n) : _m(m), _n(n) {
-	;
 }
 
 template <typename T>
 TriangleMatrix<T>::~TriangleMatrix() {
-	;
 }
 template <typename T>
 TriangleMatrix<T> TriangleMatrix<T>::operator+(TriangleMatrix<T>& tr_matrix) {

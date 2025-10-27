@@ -42,7 +42,7 @@ int main() {
 #include "../lib_trianglematrix/trianglematrix.h"
 
 template <typename T>
-Matrix<T> matrix_user_input() {
+Matrix<T> matrixUserInput() {
     int row, column;
 
     std::cout << "Please, enter the size of matrix (row column): ";
@@ -115,20 +115,20 @@ void matrixOperations() {
             break;
         }
 
-        Matrix<int> matrix_1;
-        Matrix<int> matrix_2;
-        Matrix<int> matrix_3;
-        MathVector<int> vector_1;
-        MathVector<int> vector_2;
+        Matrix<int> matrix1;
+        Matrix<int> matrix2;
+        Matrix<int> matrix3;
+        MathVector<int> vector1;
+        MathVector<int> vector2;
 
         switch (user_choice) {
         case 1:
             system("cls");
             try {
-                matrix_1 = matrix_user_input<int>();
-                matrix_2 = matrix_user_input<int>();
-                matrix_3 = matrix_1 * matrix_2;
-                std::cout << "Answer:\n" << matrix_3;
+                matrix1 = matrixUserInput<int>();
+                matrix2 = matrixUserInput<int>();
+                matrix3 = matrix1 * matrix2;
+                std::cout << "Answer:\n" << matrix3;
                 system("pause");
             }
             catch (const std::exception& e) {
@@ -139,10 +139,10 @@ void matrixOperations() {
         case 2:
             system("cls");
             try {
-                matrix_1 = matrix_user_input<int>();
-                vector_1 = vectorUserInput<int>();
-                vector_2 = matrix_1 * vector_1;
-                std::cout << "Answer:\n" << vector_2;
+                matrix1 = matrixUserInput<int>();
+                vector1 = vectorUserInput<int>();
+                vector2 = matrix1 * vector1;
+                std::cout << "Answer:\n" << vector2;
                 system("pause");
             }
             catch (const std::exception& e) {
@@ -153,10 +153,10 @@ void matrixOperations() {
         case 3:
             system("cls");
             try {
-                vector_1 = vectorUserInput<int>();
-                matrix_1 = matrix_user_input<int>();
-                vector_2 = vector_1 * matrix_1;
-                std::cout << "Answer:\n" << vector_2;
+                vector1 = vectorUserInput<int>();
+                matrix1 = matrixUserInput<int>();
+                vector2 = vector1 * matrix1;
+                std::cout << "Answer:\n" << vector2;
                 system("pause");
             }
             catch (const std::exception& e) {
@@ -167,10 +167,10 @@ void matrixOperations() {
         case 4:
             system("cls");
             try {
-                matrix_1 = matrix_user_input<int>();
-                matrix_2 = matrix_user_input<int>();
-                matrix_3 = matrix_1 + matrix_2;
-                std::cout << "Answer:\n" << matrix_3;
+                matrix1 = matrixUserInput<int>();
+                matrix2 = matrixUserInput<int>();
+                matrix3 = matrix1 + matrix2;
+                std::cout << "Answer:\n" << matrix3;
                 system("pause");
             }
             catch (const std::exception& e) {
@@ -181,10 +181,10 @@ void matrixOperations() {
         case 5:
             system("cls");
             try {
-                matrix_1 = matrix_user_input<int>();
-                matrix_2 = matrix_user_input<int>();
-                matrix_3 = matrix_1 - matrix_2;
-                std::cout << "Answer:\n" << matrix_3;
+                matrix1 = matrixUserInput<int>();
+                matrix2 = matrixUserInput<int>();
+                matrix3 = matrix1 - matrix2;
+                std::cout << "Answer:\n" << matrix3;
                 system("pause");
             }
             catch (const std::exception& e) {

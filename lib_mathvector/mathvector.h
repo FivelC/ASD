@@ -15,7 +15,6 @@ public:
     MathVector();
     MathVector(size_t m);
     ~MathVector();
-
     MathVector<T> operator*(T& val);
     T operator*(MathVector<T>& vec);
 
