@@ -1,199 +1,97 @@
 #include <iostream>
 
-template <class T>
 class List {
-private:
-    struct Node {
-        T value;
-        Node* next;
+	struct Node {
+		std::string val;
+		Node* next;
+		Node(std::string _val): val(_val),next(nullptr){}
+	};
+	Node* first;
+	Node* tail;
+	List(): first(nullptr),tail(nullptr){}
+	bool is_empty() {
+		return first == nullptr;
+	}
+	void push_back(std::string _val) {
+		Node* p = new Node(_val); //returm addres Node
+		if (is_empty()){
+			first = p;
+			tail = p;
+			return;
+		}
+		tail->next = p;
+		tail = p;
+	}
+	void print(){
+		if(is_empty())return; 
+		Node* p = first;
+		while (p) {
+			std::cout<<p->val <<" ";
+			p =p->next;
+		}
+		std::cout<<std::endl;
+	}
+	
+	Node* findNodeByVal(std::string _val) {
+		if(is_empty()) return;
+		Node* p =first;
+		while(p && p->val != _val){
+			p = p->next;
+		}
+		return (p && p->val != _val) ? p : nullptr;
+	}
 
-        Node(T val, Node* nxt = nullptr) : value(val), next(nxt) {};
-    };
+	void removeFirstNode(){
+		if (is_empty()) return;
+		Node*p = first;
+		first = p->next;
+		delete p;
+	}
+	void removeLastNode() {
+		if (is_empty()) return;
+		if (tail == first) {
+			removeFirstNode();
+			return;
+		}
+		Node* p = first;
+		while (p->next != tail) p = p->next;
+		p-> next = nullptr;
+		delete tail;
+		tail=p;
+	}
+	void removeNodeByVal(std::string _val){
+		if (is_empty()) return;
+		if (first->val == _val) {
+			removeFirstNode();
+			return;
+		}
+		else if (tail->val == _val){
+			removeLastNode();
+			return;
+		}
+		Node* slow = first;
+		Node* fast = first->next;
+		while (fast && fast->val != _val) {
+			fast = fast->next;
+			slow = slow->next;
+		}
+		if (!fast) {
+			std::cout << "This element does not exist" << std::endl;
+			return;
+		}
+		slow->next = fast->next;
+		delete fast;
+	}
 
-    Node* _head, * _tail;
 
-public:
-    List();
-    List(const List<T>&);
-    ~List();
-
-    bool is_empty();
-    void push_front(const T& value) noexcept;
-    void push_back(const T& value) noexcept;
-    void insert_after(Node* node, const T& value);
-    void insert(size_t pos, const T& value);
-    void pop_back();
-
-    class Iterator {
-        Node* _current;
-
-    public:
-        Iterator() : _current(nullptr) {};
-        Iterator(Node* node) : _current(node) {};
-
-        Iterator& operator=(const Iterator& other) noexcept {
-            _current = other._current;
-            return *this;
-        }
-
-        Iterator& operator++() noexcept {
-            if (_current != nullptr) {
-                _current = _current->next;
-            }
-            return *this;
-        }
-
-        Iterator operator++(int) noexcept {
-            Iterator temp = *this;
-            ++(*this);
-            return temp;
-        }
-
-        bool operator!=(const Iterator& other) const noexcept {
-            return _current != other._current;
-        }
-
-        bool operator==(const Iterator& other) const noexcept {
-            return _current == other._current;
-        }
-
-        T& operator*() {
-            if (_current == nullptr) {
-                throw std::runtime_error(
-                    "List::Iterator.operator*(): Dereferencing end iterator");
-            }
-            return _current->value;
-        }
-
-        T* operator->() {
-            if (_current == nullptr) {
-                throw std::runtime_error(
-                    "List::Iterator.operator->(): Accessing end iterator");
-            }
-            return &(_current->value);
-        }
-
-        Iterator& operator+=(size_t n) {
-            for (size_t i = 0; i < n && _current != nullptr; ++i) {
-                _current = _current->next;
-            }
-            return *this;
-        }
-    };
-
-    inline Iterator begin();
-    inline Iterator end();
+	//Iterator
+	Node* operator[] (const int index) {
+		if (is_empty()) return nullptr;
+		Node* p = first;
+		for (int i = 0; i < index; i++) {
+			p = p->next;
+			if (p == nullptr) return nullptr;
+		}
+		return p;
+	}
 };
-
-template <class T>
-List<T>::List() : _head(nullptr), _tail(nullptr) {};
-
-template <class T>
-List<T>::List(const List<T>& other) : _head(nullptr), _tail(nullptr) {
-    Node* current = other._head;
-    while (current != nullptr) {
-        push_back(current->value);
-        current = current->next;
-    }
-}
-
-template <class T>
-List<T>::~List() {
-    while (_head != nullptr) {
-        Node* temp = _head;
-        _head = _head->next;
-        delete temp;
-    }
-}
-
-template <class T>
-bool List<T>::is_empty() {
-    return _head == nullptr;
-}
-
-template <class T>
-void List<T>::push_front(const T& value) noexcept {
-    Node* node = new Node(value, _head);
-    if (is_empty()) {
-        _tail = node;
-    }
-    _head = node;
-}
-
-template <class T>
-void List<T>::push_back(const T& val) noexcept {
-    Node* node = new Node(val, nullptr);
-
-    if (is_empty()) {
-        _head = node;
-        _tail = node;
-        return;
-    }
-    _tail->next = node;
-    _tail = node;
-}
-
-template <class T>
-void List<T>::insert_after(Node* node, const T& val) {
-    if (node == nullptr || is_empty()) {
-        throw std::logic_error("List.insert(): List is empty");
-    }
-    Node* new_node = new Node(val);
-    new_node->next = node->next;
-    node->next = new_node;
-    if (node == _tail) {
-        _tail = new_node;
-    }
-}
-
-template <class T>
-void List<T>::insert(size_t pos, const T& val) {
-    if (pos == 0) {
-        push_front(val);
-        return;
-    }
-
-    Node* cur = _head;
-    size_t cur_pos = 0;
-    while (cur != nullptr) {
-        if (cur_pos == pos - 1) {
-            break;
-        }
-        cur_pos++;
-        cur = cur->next;
-    }
-    if (cur == nullptr) {
-        throw std::logic_error("List.insert(): Position out of range");
-    }
-    insert_after(cur, val);
-}
-
-template <class T>
-void List<T>::pop_back() {
-    if (is_empty()) {
-        throw std::logic_error("List.pop_back(): List is empty");
-    }
-    if (_head == _tail) {
-        delete _head;
-        _head = nullptr;
-        _tail = nullptr;
-        return;
-    }
-    Node* cur = _head;
-    while (cur->next != _tail) {
-        cur = cur->next;
-    }
-    delete _tail;
-    _tail = cur;
-    cur->next = nullptr;
-}
-
-template <class T>
-inline typename List<T>::Iterator List<T>::begin() {
-    return Iterator(_head);
-}
-
-template <class T>
-inline typename List<T>::Iterator List<T>::end() {
-    return Iterator(nullptr);
-}
