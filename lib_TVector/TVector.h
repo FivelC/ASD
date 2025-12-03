@@ -32,12 +32,14 @@ public:
 
     // Getters
     inline T* data() const noexcept { return _data; };
+    inline TVectorElemState* states() const noexcept { return _states; };
+    inline bool deleted() const noexcept { if (_deleted > 1) { return true; } else { return false; } };
     inline size_t size() const noexcept { return _size - _deleted; };
     inline size_t capacity() const noexcept { return _capacity; };
     inline T& front() const { return at(0); };
     inline T& back() const { return at(size() - 1); };
-    inline T* begin() const;
-    inline T* end() const;
+    /*inline T* begin() const;
+    inline T* end() const;*/ //delete
 
     // Functions
     bool is_empty() const noexcept;

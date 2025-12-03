@@ -47,15 +47,15 @@ private:
 
 template <typename T>
 Matrix<T>::Matrix() :_m(2), _n(2) {
-    this->resize(m, )
+    /*this->resize(m, n);*/
 };
 
 template <typename T>
 Matrix<T>::Matrix(size_t m, size_t n) : _m(m), _n(n) {
-    this->resize(m);
-    for (int i = 0; i < m; ++i) {
-        
-    }
+    //this->resize(m);
+    //for (int i = 0; i < m; ++i) {
+    //    
+    //}
 
 }
 
