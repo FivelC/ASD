@@ -1,98 +1,165 @@
-#include <iostream>
-#include <initializer_list>
+﻿#include "../lib_TVector/TVector.h"
 
+#include <stdexcept>
 
-template <class T>
-class Stack {
-	T* _data; int _size; int _top;
+#define STACK_DEFAULT_SIZE 1
+
+template<class T> class Stack {
+	T* _data;
+	size_t _size;
+	int _top; //index
 public:
 	Stack();
-	Stack(int);
-	Stack(const Stack<T>&);
-	Stack(std::initializer_list<T>);
+	Stack(size_t);
+	Stack(size_t, const T&);
+	Stack(const Stack&);
+
 	~Stack();
 
-	void push(T val);
+	Stack& assign(const Stack&); //return link to the object
+	void push(T& val);
 	void pop();
-	inline T top() const;
-	inline bool is_empty() const noexcept;
-	inline bool is_full() const noexcept;
+	T& top(); //non const
+	const T& top() const; //only to const
 	void clear() noexcept;
 
+	void reserve(size_t) noexcept;
+	void shrinkToFit();
+
+	inline bool isEmpty() const noexcept { return _top == -1; }
+	inline bool isFull() const noexcept { return _top == static_cast<int>(_size - 1); }
+	inline size_t sizeReal() const noexcept { return static_cast<size_t>(_top + 1); }
+	inline size_t size() const noexcept { return _size; }
+
+	Stack& operator=(const Stack&);
 };
 
-template <class T>
-Stack<T>::Stack() {
-	_size = 10;
-	_data = new T[_size];
-	_top = -1;
+// сonstructors
+
+template<class T> Stack<T>::Stack() :
+	_data(new T[STACK_DEFAULT_SIZE]),
+	_size(STACK_DEFAULT_SIZE),
+	_top(-1)
+{
 }
 
-template <class T>
-Stack<T>::Stack(int size) {
-	_size = size;
+template<class T> Stack<T>::Stack(size_t size) :
+	_data(nullptr),
+	_size(size),
+	_top(-1)
+{
+	if (size == 0) {
+		throw std::logic_error("Stack(size): size must be > 0");
+	}
 	_data = new T[_size];
-	_top = -1;
 }
 
-template <class T>
-Stack<T>::Stack(const Stack<T>& other) {
-	_size = other._size;
-	_top = other._top;
+template<class T> Stack<T>::Stack(size_t size, const T& value) :
+	_data(nullptr),
+	_size(size),
+	_top(static_cast<int>(size - 1))
+{
+	if (size == 0) {
+		throw std::logic_error("Stack(size, val): size must be > 0");
+	}
 	_data = new T[_size];
-	for (int i = 0; i <= _top; ++i) {
+	for (size_t i = 0; i < _size; i++) {
+		_data[i] = value;
+	}
+}
+
+template<class T> Stack<T>::Stack(const Stack& other) :
+	_data(nullptr),
+	_size(other._size),
+	_top(other._top)
+{
+	_data = new T[_size];
+	for (int i = 0; i < _size; i++) {
 		_data[i] = other._data[i];
 	}
 }
 
-template <class T>
-Stack<T>::Stack(std::initializer_list<T> init_list) {
-	_size = init_list.size();
-	_data = new T[_size];
-	_top = _size - 1;
-
-	int i = 0;
-	for (const T& val : init_list) {
-		_data[i++] = val;
-	}
-}
-
-template <class T>
-Stack<T>::~Stack() {
+template<class T> Stack<T>::~Stack() {
 	delete[] _data;
 }
 
 
+//function
 
-template <class T>
-void Stack<T>::push(T val) {
-	if (is_full()) throw std::logic_error("push(): Stack is full!");
-	_data[++_top] = val;
+//template<class T> Stack<T>& Stack<T>::assign(const Stack& other) {
+//	if (this != &other) {
+//		this.delete[] _data;
+//		_size = other._size;
+//		_top = other._top;
+//		_data = new T[_size];
+//		for (int i = 0; i < _size; i++) {
+//			_data[i] = other._data[i];
+//		}
+//	}
+//	return *this;
+//}
+
+template<class T> void Stack<T>::push(T& val) {
+	if (isFull()) {
+		throw std::logic_error("push(val): unable to push, stack is full");
+	}
+	_top++;
+	_data[_top] = val;
 }
 
-template <class T>
-void Stack<T>::pop() {
-	if (is_empty()) throw std::logic_error("pop(): Stack is empty!");
+template<class T> void Stack<T>::pop() {
+	if (isEmpty()) {
+		throw std::logic_error("pop(): unable to pop, stack is empty");
+	}
 	_top--;
 }
 
-template <class T>
-T Stack<T>::top() const {
-	if (is_empty()) throw std::logic_error("top(): Stack is empty!");
+template<class T> T& Stack<T>::top() {
+	if (isEmpty()) {
+		throw std::logic_error("top(): unable to get the top element, stack is empty");
+	}
 	return _data[_top];
 }
 
-template <class T>
-inline bool Stack<T>::is_empty() const noexcept {
-	return _top == -1;
+template<class T> const T& Stack<T>::top() const {
+	if (isEmpty()) {
+		throw std::logic_error("top(): unable to get the top element, stack is empty");
+	}
+	return _data[_top];
 }
 
-template <class T>
-inline bool Stack<T>::is_full() const noexcept {
-	return _top == _size - 1;
-}
-
-template <class T>
-void Stack<T>::clear() noexcept {
+template<class T> void Stack<T>::clear() noexcept {
 	_top = -1;
+}
+
+template<class T> void Stack<T>::reserve(size_t newCapacity) noexcept {
+	if (newCapacity <= _size) return;
+	T* newData = new T[newCapacity];
+	for (size_t i = 0; i < _size; i++) {
+		newData[i] = _data[i];
+	}
+	delete[] _data;
+	_data = newData;
+	_size = newCapacity;
+}
+
+template<class T> void Stack<T>::shrinkToFit() {
+	if (isEmpty()) {
+		throw std::logic_error("shrinkToFit(): undable to shrink, stack is empty");
+	}
+	if (isFull()) return;
+	T* newData = new T[_top + 1];
+	for (size_t i = 0; i <= _top; i++) {
+		newData[i] = _data[i];
+	}
+	delete[] _data;
+	_data = newData;
+	_size = _top + 1;
+}
+
+
+// overload
+
+template<class T> Stack<T>& Stack<T>::operator=(const Stack& other) {
+	return this->assign(other);
 }
