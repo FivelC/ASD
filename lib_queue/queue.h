@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#include <stdexcept>
+﻿#include <stdexcept>
 
 #define QUEUE_DEFAULT_SIZE 1
 
@@ -24,8 +22,6 @@ public:
 	void pop();
 	T& head();
 	T& tail();
-	const T& head() const;
-	const T& tail() const;
 	void clear() noexcept;
 
 	void reserve(size_t) noexcept;
@@ -143,21 +139,6 @@ template<class T> T& Queue<T>::tail() {
 	return _data[(_tail - 1 + _size) % _size];
 }
 
-// for const
-template<class T> const T& Queue<T>::head() const {
-	if (isEmpty()) {
-		throw std::logic_error("head(): unable to get head element, queue is empty");
-	}
-	return _data[_head];
-}
-
-template<class T> const T& Queue<T>::tail() const {
-	if (isEmpty()) {
-		throw std::logic_error("tail(): unable to get last(top) element, queue is empty");
-	}
-	return _data[(_tail - 1 + _size) % _size];
-}
-
 template<class T> void Queue<T>::clear() noexcept {
 	_count = 0;
 	_head = 0;
@@ -166,7 +147,6 @@ template<class T> void Queue<T>::clear() noexcept {
 
 
 template<class T> void Queue<T>::reserve(size_t newCapacity) noexcept {
-	if (newCapacity <= _size) return;//unnecessary
 	if (newCapacity <= _count) return;
 
 	T* newData = new T[newCapacity];

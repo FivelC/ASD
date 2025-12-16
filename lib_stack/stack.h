@@ -7,7 +7,7 @@
 template<class T> class Stack {
 	T* _data;
 	size_t _size;
-	int _top; //index
+	int _top;
 public:
 	Stack();
 	Stack(size_t);
@@ -16,11 +16,10 @@ public:
 
 	~Stack();
 
-	Stack& assign(const Stack&); //return link to the object
+	Stack& assign(const Stack&);
 	void push(T& val);
 	void pop();
-	T& top(); //non const
-	const T& top() const; //only to const
+	T& top();
 	void clear() noexcept;
 
 	void reserve(size_t) noexcept;
@@ -86,18 +85,18 @@ template<class T> Stack<T>::~Stack() {
 
 //function
 
-//template<class T> Stack<T>& Stack<T>::assign(const Stack& other) {
-//	if (this != &other) {
-//		this.delete[] _data;
-//		_size = other._size;
-//		_top = other._top;
-//		_data = new T[_size];
-//		for (int i = 0; i < _size; i++) {
-//			_data[i] = other._data[i];
-//		}
-//	}
-//	return *this;
-//}
+template<class T> Stack<T>& Stack<T>::assign(const Stack& other) {
+	if (this != &other) {
+		delete[] _data;
+		_size = other._size;
+		_top = other._top;
+		_data = new T[_size];
+		for (size_t i = 0; i < _size; i++) {
+			_data[i] = other._data[i];
+		}
+	}
+	return *this;
+}
 
 template<class T> void Stack<T>::push(T& val) {
 	if (isFull()) {
@@ -115,13 +114,6 @@ template<class T> void Stack<T>::pop() {
 }
 
 template<class T> T& Stack<T>::top() {
-	if (isEmpty()) {
-		throw std::logic_error("top(): unable to get the top element, stack is empty");
-	}
-	return _data[_top];
-}
-
-template<class T> const T& Stack<T>::top() const {
 	if (isEmpty()) {
 		throw std::logic_error("top(): unable to get the top element, stack is empty");
 	}
@@ -163,3 +155,39 @@ template<class T> void Stack<T>::shrinkToFit() {
 template<class T> Stack<T>& Stack<T>::operator=(const Stack& other) {
 	return this->assign(other);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Stack(std::initializer_list<T> list);
+//template<class T> Stack<T>::Stack(std::initializer_list<T> list) :
+//	_data(nullptr),
+//	_size(list.size()),
+//	_top(static_cast<int>(list.size() - 1))
+//{
+//	if (_size == 0) {
+//		throw std::logic_error("Stack(initializer_list): list must not be empty");
+//	}
+//	_data = new T[_size];
+//
+//	// Копируем элементы из initializer_list
+//	size_t i = 0;
+//	for (const T& element : list) {
+//		_data[i++] = element;
+//	}
+//}
