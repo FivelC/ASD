@@ -1,6 +1,6 @@
 // Copyright 2024 Marina Usova
 
-#define MATRIX
+#define MAT
 #ifdef EASY_EXAMPLE
 
 #include <iostream>

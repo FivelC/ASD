@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#define STACK_DEFAULT_SIZE 1
+#define STACK_DEFAULT_SIZE 100
 
 template<class T> class Stack {
 	T* _data;
@@ -17,7 +17,7 @@ public:
 	~Stack();
 
 	Stack& assign(const Stack&);
-	void push(T& val);
+	void push(const T& val);
 	void pop();
 	T& top();
 	void clear() noexcept;
@@ -98,7 +98,7 @@ template<class T> Stack<T>& Stack<T>::assign(const Stack& other) {
 	return *this;
 }
 
-template<class T> void Stack<T>::push(T& val) {
+template<class T> void Stack<T>::push(const T& val) {
 	if (isFull()) {
 		throw std::logic_error("push(val): unable to push, stack is full");
 	}

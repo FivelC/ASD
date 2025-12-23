@@ -17,6 +17,7 @@ public:
     List(const List&);
     ~List();
 
+    List& assign(const List&);
     size_t size() const { return _size; }
     bool is_empty() const { return _first == nullptr; }
     T& front() {
@@ -81,6 +82,13 @@ public:
             return _current->val;
         }
 
+        T* operator->() {
+            if (_current == nullptr) {
+                throw std::logic_error("Iterator: accessing end iterator");
+            }
+            return &(_current->val);
+        }
+
         Iterator& operator+=(size_t gap) {
             for (size_t i = 0; i < gap; i++) {
                 if (_current == nullptr) break;
@@ -88,12 +96,24 @@ public:
             }
             return *this;
         }
+
     };
 
     Iterator begin() { return Iterator(_first); }
     Iterator end() { return Iterator(nullptr); }
     const Iterator begin() const { return Iterator(_first); }
     const Iterator end() const { return Iterator(nullptr); }
+    List& operator=(const List& other) { //for calculator
+        if (this != &other) {
+            clear();
+            Node* current = other._first;
+            while (current != nullptr) {
+                push_back(current->val);
+                current = current->next;
+            }
+        }
+        return *this;
+    }
 };
 
 // Конструкторы и деструктор
@@ -115,6 +135,20 @@ List<T>::~List() {
 }
 
 // Основные операции
+
+template<class T> List<T>& List<T>::assign(const List& other) {
+    if (this != &other) {
+        clear();
+        //_size = 0;
+        Node* current = other._first;
+        while (current != nullptr) {
+            push_back(current->val);
+            current = current->next;
+        }
+    }
+    return *this;
+}
+
 template <class T>
 void List<T>::push_back(T _val) {
     Node* p = new Node(_val);
@@ -171,7 +205,7 @@ void List<T>::pop_back() {
     }
     else {
         Node* p = _first;
-        while (p->next != _tail) {
+        while (p->next->next != nullptr) {
             p = p->next;
         }
         delete _tail;
@@ -273,11 +307,13 @@ void List<T>::erase(size_t pos) {
 
 template <class T>
 void List<T>::clear() {
-    while (_first != nullptr) {
-        Node* cur = _first;
-        _first = _first->next;
-        delete cur;
+    Node* current = _first;
+    while (current != nullptr) {
+        Node* next = current->next;
+        delete current;
+        current = next;
     }
+    _first = nullptr;
     _tail = nullptr;
     _size = 0;
 }
@@ -290,4 +326,3 @@ typename List<T>::Node* List<T>::find_node_by_val(T _val) {
     }
     return p;
 }
-

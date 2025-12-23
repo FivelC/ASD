@@ -4,10 +4,10 @@
 #include <chrono>
 #include <initializer_list>
 #pragma once
-#define CAPACITY 15
+#define CAPACITY 100
 #define DELETED_LIMIT 0.15
 
-enum class TVectorElemState { empty, busy, deleted };
+enum TVectorElemState { empty, busy, deleted };
 
 template<class T> class TVector {
     T* _data = nullptr;
