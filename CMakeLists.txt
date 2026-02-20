@@ -12,21 +12,9 @@ project(Algorithms-and-Data-Structures)
 include(cmake/function.cmake)         # подхватываем функции, реализованные в файле function.cmake
                                       # для простоты мы объединили наборы команд для создания статической библиотеки
 								      # и для создания исполняемого проекта в отдельные функции
-
-add_subdirectory(lib_easy_example)    # подключаем дополнительный CMakeLists.txt из подкаталога с именем lib_easy_example
-add_subdirectory(lib_mathvector)
-add_subdirectory(lib_trianglematrix)
-add_subdirectory(lib_matrix)
-add_subdirectory(lib_TVector)
-add_subdirectory(lib_lexem)
-add_subdirectory(lib_parser)
-add_subdirectory(lib_expression)
-add_subdirectory(calculator)
-add_subdirectory(lib_stack)
-add_subdirectory(lib_queue)
+   # подключаем дополнительный CMakeLists.txt из подкаталога с именем lib_easy_example
+add_subdirectory(lib_monom)
 add_subdirectory(lib_list)
-add_subdirectory(lib_stack_on_list)
-add_subdirectory(lib_queue_on_list)
 add_subdirectory(lib_doubly_linked_list)
 add_subdirectory(main)                # подключаем дополнительный CMakeLists.txt из подкаталога с именем main
 
