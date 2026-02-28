@@ -14,8 +14,12 @@ include(cmake/function.cmake)         # подхватываем функции,
 								      # и для создания исполняемого проекта в отдельные функции
    # подключаем дополнительный CMakeLists.txt из подкаталога с именем lib_easy_example
 add_subdirectory(lib_monom)
+add_subdirectory(lib_polynom)
 add_subdirectory(lib_list)
 add_subdirectory(lib_stack)
+add_subdirectory(lib_lexem)
+add_subdirectory(lib_expression)
+add_subdirectory(lib_parser)
 add_subdirectory(lib_doubly_linked_list)
 add_subdirectory(main)                # подключаем дополнительный CMakeLists.txt из подкаталога с именем main
 
