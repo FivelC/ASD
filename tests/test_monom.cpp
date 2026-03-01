@@ -2,21 +2,21 @@
 #include <iostream>
 #include "../lib_monom/monom.h"
 
-TEST(Monom_test, DefaultConstraction) {
+TEST(MonomTest, DefaultConstraction) {
     Monom a;
     EXPECT_EQ(a.getCoefficient(), 0.0);
     EXPECT_EQ(a.getXPower(), 0);
     EXPECT_EQ(a.getYPower(), 0);
     EXPECT_EQ(a.getZPower(), 0);
 }
-TEST(Monom_test, ThreeInit) {
+TEST(MonomTest, ThreeInit) {
     Monom a(123.1, 1, 2, 3);
     EXPECT_EQ(a.getCoefficient(), 123.1);
     EXPECT_EQ(a.getXPower(), 1);
     EXPECT_EQ(a.getYPower(), 2);
     EXPECT_EQ(a.getZPower(), 3);
 }
-TEST(Monom_test, TwoInit) {
+TEST(MonomTest, TwoInit) {
     Monom a(123.1, 1, 2, 'x', 'y');
     EXPECT_EQ(a.getCoefficient(), 123.1);
     EXPECT_EQ(a.getXPower(), 1);
@@ -32,7 +32,7 @@ TEST(Monom_test, TwoInit) {
     EXPECT_THROW(Monom c(123.1, 1, 2, 'z', 'z'), std::invalid_argument);
     EXPECT_THROW(Monom c(123.1, 1, 2, 'u', 'z'), std::invalid_argument);
 }
-TEST(Monom_test, OneInit) {
+TEST(MonomTest, OneInit) {
     Monom a(123, 1, 'y');
     EXPECT_EQ(a.getCoefficient(), 123.0);
     EXPECT_EQ(a.getXPower(), 0);
@@ -48,7 +48,7 @@ TEST(Monom_test, OneInit) {
     EXPECT_THROW(Monom c(123.1, 1, 'u'), std::invalid_argument);
 }
 
-TEST(Monom_test, Copy) {
+TEST(MonomTest, Copy) {
     Monom a(123.1, 1, 'y');
     Monom b(a);
     EXPECT_EQ(b.getCoefficient(), a.getCoefficient());
@@ -57,7 +57,7 @@ TEST(Monom_test, Copy) {
     EXPECT_EQ(b.getZPower(), a.getZPower());
 }
 
-TEST(Monom_test, CoefficientOnlyConstructor) {
+TEST(MonomTest, CoefficientOnlyConstructor) {
     Monom a(7.5);
     EXPECT_DOUBLE_EQ(a.getCoefficient(), 7.5);
     EXPECT_EQ(a.getXPower(), 0);
@@ -69,7 +69,7 @@ TEST(Monom_test, CoefficientOnlyConstructor) {
 }
 //#############################################
 
-TEST(Monom_test, EqualityAndInequality) {
+TEST(MonomTest, EqualityAndInequality) {
     Monom a(4.0, 2, 1, 0);
     Monom b(4.0, 2, 1, 0);
     Monom c(4.1, 2, 1, 0);
@@ -84,7 +84,7 @@ TEST(Monom_test, EqualityAndInequality) {
     EXPECT_TRUE(a != d);
 }
 
-TEST(Monom_test, MultiplicationMonomByMonom) {
+TEST(MonomTest, MultiplicationMonomByMonom) {
     Monom a(3.0, 2, 1, 0);
     Monom b(2.0, -1, 0, -3);
     Monom res = a * b;
@@ -95,7 +95,7 @@ TEST(Monom_test, MultiplicationMonomByMonom) {
     EXPECT_EQ(res.getZPower(), -3);
 }
 
-TEST(Monom_test, MultiplicationByScalar) {
+TEST(MonomTest, MultiplicationByScalar) {
     Monom a(5.0, 1, 2, 3);
     Monom b = a * 4.0;
     Monom c = a * (-1.5);
@@ -111,7 +111,7 @@ TEST(Monom_test, MultiplicationByScalar) {
     EXPECT_EQ(c.getZPower(), 3);
 }
 
-TEST(Monom_test, DivisionMonomByMonom) {
+TEST(MonomTest, DivisionMonomByMonom) {
     Monom a(12.0, 4, 3, 2);
     Monom b(3.0, 1, 1, 0);
     Monom res = a / b;
@@ -122,7 +122,7 @@ TEST(Monom_test, DivisionMonomByMonom) {
     EXPECT_EQ(res.getZPower(), 2);
 }
 
-TEST(Monom_test, DivisionByScalar) {
+TEST(MonomTest, DivisionByScalar) {
     Monom a(10.0, 2, 0, 1);
     double k = 2.0;
     Monom b = a / k;
@@ -132,14 +132,14 @@ TEST(Monom_test, DivisionByScalar) {
     EXPECT_DOUBLE_EQ(c.getCoefficient(), -20.0);
 }
 
-TEST(Monom_test, DivisionByZeroScalarThrows) {
+TEST(MonomTest, DivisionByZeroScalarThrows) {
     Monom a(7.0, 1, 1, 1);
     EXPECT_THROW(a / 0.0, std::invalid_argument);
     EXPECT_THROW(a / 1e-15, std::invalid_argument);
     EXPECT_NO_THROW(a / 1e-11);                          
 }
 
-TEST(Monom_test, AdditionSamePowers) {
+TEST(MonomTest, AdditionSamePowers) {
     Monom a(5.0, 2, 1, 0);
     Monom b(3.0, 2, 1, 0);
     Monom c(-2.0, 2, 1, 0);
@@ -154,13 +154,13 @@ TEST(Monom_test, AdditionSamePowers) {
     EXPECT_DOUBLE_EQ(sum2.getCoefficient(), 3.0);
 }
 
-TEST(Monom_test, AdditionDifferentPowersThrows) {
+TEST(MonomTest, AdditionDifferentPowersThrows) {
     Monom a(1.0, 1, 0, 0);
     Monom b(1.0, 0, 1, 0);
     EXPECT_THROW(a + b, std::invalid_argument);
 }
 
-TEST(Monom_test, SubtractionSamePowers) {
+TEST(MonomTest, SubtractionSamePowers) {
     Monom a(7.5, 3, 0, 2);
     Monom b(2.5, 3, 0, 2);
 
@@ -170,13 +170,13 @@ TEST(Monom_test, SubtractionSamePowers) {
     EXPECT_EQ(diff.getZPower(), 2);
 }
 
-TEST(Monom_test, SubtractionDifferentPowersThrows) {
+TEST(MonomTest, SubtractionDifferentPowersThrows) {
     Monom a(4.0, 0, 2, 0);
     Monom b(1.0, 1, 0, 0);
     EXPECT_THROW(a - b, std::invalid_argument);
 }
 
-TEST(Monom_test, UnaryMinus) {
+TEST(MonomTest, UnaryMinus) {
     Monom a(6.4, 1, 2, 1);
     Monom b = -a;
 
@@ -190,7 +190,7 @@ TEST(Monom_test, UnaryMinus) {
     EXPECT_DOUBLE_EQ(d.getCoefficient(), 0.0);
 }
 
-TEST(Monom_test, CompoundAssignmentOperators) {
+TEST(MonomTest, CompoundAssignmentOperators) {
     Monom a(2.0, 1, 0, 0);
     Monom b(3.0, 0, 1, 0);
 
@@ -211,7 +211,7 @@ TEST(Monom_test, CompoundAssignmentOperators) {
     EXPECT_DOUBLE_EQ(e.getCoefficient(), 3.0);
 }
 //######################################################
-TEST(Monom_test, EvaluateSimple) {
+TEST(MonomTest, EvaluateSimple) {
     Monom m(4.0, -2, 1, 0); 
 
     EXPECT_DOUBLE_EQ(m.solve(2.0, 3.0, 5.0), 4.0 * 0.25 * 3.0);
@@ -219,13 +219,13 @@ TEST(Monom_test, EvaluateSimple) {
     EXPECT_THROW(m.solve(0.0, 5.0, 7.0), std::invalid_argument);
 }
 
-TEST(Monom_test, EvaluateZeroCoefficient) {
+TEST(MonomTest, EvaluateZeroCoefficient) {
     Monom m(0.0, 10, 10, 10);
     EXPECT_DOUBLE_EQ(m.solve(2.0, 3.0, 4.0), 0.0);
     EXPECT_DOUBLE_EQ(m.solve(0.0, 0.0, 0.0), 0.0);
 }
 
-TEST(Monom_test, PowerCompareInternal) {
+TEST(MonomTest, PowerCompareInternal) {
     Monom a(1.0, 2, 3, 4);
     Monom b(9.9, 2, 3, 4);
     Monom c(1.0, 2, 4, 4);
@@ -233,7 +233,7 @@ TEST(Monom_test, PowerCompareInternal) {
     EXPECT_TRUE(a.powerCompare(b));
     EXPECT_FALSE(a.powerCompare(c));
 }
-TEST(Monom_test, Output) {
+TEST(MonomTest, Output) {
     Monom a(1.2, 2, 3, 4);
     std::ostringstream oss1;
     oss1 << a;

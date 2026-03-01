@@ -9,18 +9,54 @@ Polynom::Polynom(const Polynom& other) {
 }
 Polynom::Polynom(std::string expression) {
 	//парсер
+	//void Monom::expression(std::string exem, unsigned int* x_degre, unsigned int* y_degre, unsigned int* z_degre, double* coef) {
+//	int i = 0;
+//	double tmp_coef = 0.0;
+//	while (i < exem.size() - 1 && (std::isdigit(exem[i]) || exem[i] == '.')) {
+//		if (exem[i] == '.') {
+//			i++;
+//			while (i < exem.size() && std::isdigit(exem[i])) {
+//				tmp_coef *= 0.1;
+//				tmp_coef = tmp_coef * 10 + (exem[i] - '0');
+//				i++;
+//			}
+//			break;
+//		}
+//		tmp_coef = tmp_coef * 10 + (exem[i] - '0');
+//		i++;
+//	}
+//	*coef = tmp_coef;
+//
+//
+//	while (i < exem.size()) {
+//		if (!std::isalpha(exem[i])) {
+//			i++;              
+//			continue;
+//		}
+//
+//		char var = exem[i++];
+//		unsigned int deg = 1;
+//
+//		if (i < exem.size() && exem[i] == '^') {
+//			i++;
+//			deg = 0;
+//			while (i < exem.size() && std::isdigit(exem[i])) {
+//				deg = deg * 10 + (exem[i] - '0');
+//				i++;
+//			}
+//		}
+//
+//		if (var == 'x') *x_degre = deg;
+//		else if (var == 'y') *y_degre = deg;
+//		else if (var == 'z') *z_degre = deg;
+//	}
 }
-void Polynom::insertSorted(const Monom& m){
-	if (m.getCoefficient() == 0) return;
-
-	auto it = polynom.begin();
-	size_t pos = 0;
-	while (it != polynom.end() && !lexGreater(m, *it)) {
-		++it;
-		pos++;
+//##########################################################
+Polynom& Polynom::operator=(const Polynom& other) {
+	if (this != &other) {
+		polynom = other.polynom;
 	}
-	polynom.insert(pos, m);
-	normalize();
+	return *this;
 }
 
 Polynom Polynom::operator+(const Monom& other) {
@@ -68,38 +104,54 @@ Polynom Polynom::operator-(Polynom& other) {
 }
 Polynom Polynom::operator*(Polynom& other)
 {
-	Polynom res = *this;
-	for (auto it = other.polynom.begin(); it != other.polynom.end(); ++it)
-	{
-		res = res + (*this) * (*it);
+	Polynom res;
+	for (auto it1 = polynom.begin(); it1 != polynom.end(); ++it1) {
+		for (auto it2 = other.polynom.begin(); it2 != other.polynom.end(); ++it2) {
+			res.insertSorted((*it1) * (*it2));
+		}
 	}
 	return res;
 }
+//##########################################################
+void Polynom::insertSorted(const Monom& m) {
+	if (m.getCoefficient() == 0) return;
 
-void Polynom::normalize() {
-	if (polynom.is_empty()) return;
-	auto cur = polynom.begin();
+	auto it = polynom.begin();
 	size_t pos = 0;
-	while (cur != nullptr) {
-		auto next = cur;
-		++next;
-		while (cur != polynom.end()) {
-			if (*cur == *next) {
-				double new_coef = cur->getCoefficient() + next->getCoefficient();
-				cur->setCoefficient(new_coef);
-				polynom.erase(pos + 1);
+	while (it != polynom.end() && !lexGreater(m, *it)) {
+		++it;
+		pos++;
+	}
+	polynom.insert(pos, m);
+	normalize();
+}
+void Polynom::normalize() {
+
+	for (auto it = polynom.begin(); it != polynom.end(); ) {
+
+		auto jt = it;
+		++jt;
+
+		while (jt != polynom.end()) {
+
+			if (*it == *jt) {
+
+				it->setCoefficient(
+					it->getCoefficient() + jt->getCoefficient()
+				);
+
+				jt = polynom.erase(jt); //special for iterator
 			}
 			else {
-				++cur;
-				++pos;
+				++jt;
 			}
 		}
-		if (cur->getCoefficient() == 0.0) {
-			polynom.erase(pos);
+
+		if (it->getCoefficient() == 0.0) {
+			it = polynom.erase(it);
 		}
 		else {
-			++cur;
-			++pos;
+			++it;
 		}
 	}
 }
@@ -108,12 +160,27 @@ bool Polynom::lexGreater(const Monom& a, const Monom& b) {
 	if (a.getYPower() != b.getYPower())   return a.getYPower() > b.getYPower();
 	return a.getZPower() > b.getZPower();
 }
+//##########################################################
+std::ostream& operator<<(std::ostream& ostr, Polynom& p) {
+	if (p.isEmpty()) {
+		ostr << "0";
+		return ostr;
+	}
 
-//ostream& operator<<(ostream& ostr, const Polynomial& p)
-//{
-//	for (auto it = p.monoms.begin(); it != p.monoms.end(); ++it)
-//	{
-//		ostr << *it << " + ";
-//	}
-//	return ostr;
-//}
+	auto it = p.begin();
+	ostr << *it;
+
+	++it;
+	for (it; it != p.end(); ++it) {
+		const Monom& m = *it;
+		if (m.getCoefficient() >= 0) {
+			ostr << " + ";
+		}
+		else {
+			ostr << " - ";
+		}
+		ostr << m;
+	}
+
+	return ostr;
+}

@@ -44,11 +44,12 @@ public:
     void insert(size_t, const T&);
     void insertAtNode(Node*, const T&);
     void erase(size_t);
-    void eraseNode(Node*);
+    Node* eraseNode(Node*);
     void clear();
 
     class Iterator {
         Node* _current;
+        friend class DoublyLinkedList<T>;
     public:
         Iterator() : _current(nullptr) {};
         Iterator(Node* node) : _current(node) {};
@@ -122,7 +123,10 @@ public:
             return &(_current->val);
         }
     };
-
+    DoublyLinkedList& operator=(const DoublyLinkedList& other);
+    Iterator erase(Iterator it) {
+        return Iterator(eraseNode(it._current));
+    }
     Iterator begin() { return Iterator(_first); }
     Iterator end() { return Iterator(nullptr); }
     Iterator rbegin() { return Iterator(_tail); }
@@ -337,30 +341,61 @@ void DoublyLinkedList<T>::erase(size_t pos) {
 }
 
 template<class T>
-void DoublyLinkedList<T>::eraseNode(typename DoublyLinkedList<T>::Node* pos) {
-    if (pos == nullptr) {
-        throw std::logic_error("eraseNode: Node pointer is null");
-    }
+typename DoublyLinkedList<T>::Node*
+DoublyLinkedList<T>::eraseNode(Node* pos) {
 
-    if (is_empty()) {
+    if (!pos)
+        throw std::logic_error("eraseNode: Node pointer is null");
+
+    if (is_empty())
         throw std::logic_error("eraseNode: List is empty");
-    }
+
+    Node* next = pos->next;
 
     if (pos == _first) {
         pop_front();
-        return;
+        return next;
     }
 
     if (pos == _tail) {
         pop_back();
-        return;
+        return nullptr;
     }
 
     pos->prev->next = pos->next;
     pos->next->prev = pos->prev;
+
     delete pos;
     _size--;
+
+    return next;
 }
+
+//template<class T>
+//typename DoublyLinkedList<T>::Node* DoublyLinkedList<T>::eraseNode(typename DoublyLinkedList<T>::Node* pos) {
+//    if (pos == nullptr) {
+//        throw std::logic_error("eraseNode: Node pointer is null");
+//    }
+//
+//    if (is_empty()) {
+//        throw std::logic_error("eraseNode: List is empty");
+//    }
+//
+//    if (pos == _first) {
+//        pop_front();
+//        return;
+//    }
+//
+//    if (pos == _tail) {
+//        pop_back();
+//        return;
+//    }
+//
+//    pos->prev->next = pos->next;
+//    pos->next->prev = pos->prev;
+//    delete pos;
+//    _size--;
+//}
 
 template<class T>
 void DoublyLinkedList<T>::clear() {
@@ -373,4 +408,17 @@ void DoublyLinkedList<T>::clear() {
     _size = 0;
 }
 
+template<class T>
+DoublyLinkedList<T>& DoublyLinkedList<T>::operator=(const DoublyLinkedList& other) {
+    if (this != &other) {
+        clear();
+
+        Node* cur = other._first;
+        while (cur != nullptr) {
+            push_back(cur->val);
+            cur = cur->next;
+        }
+    }
+    return *this;
+}
 #endif // DOUBLYLINKEDLIST_H
