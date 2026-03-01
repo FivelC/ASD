@@ -1,19 +1,6 @@
 ﻿#include "../lib_monom/monom.h"
 #include <cctype>
 
-
-double Monom::pow(double x, int power) {
-	if (power == 0) return 1.0;
-	if (power < 0) return 1.0/ pow(x, -power);
-	if (power % 2 == 0) {
-		double half = pow(x, power / 2);
-		return half * half;
-	}
-	else {
-		return x * pow(x, power - 1);
-	}
-}
-
 Monom::Monom(double _coefficent, int x, int y, int z) {
 	factor.coefficient = _coefficent;
 	factor.powers[0] = x;
@@ -43,12 +30,9 @@ Monom::Monom(double _coefficent, int power, char val) : factor{ _coefficent, {0,
 	else if (val == 'z') factor.powers[2] = power;
 	else throw std::invalid_argument("Invalid variable");
 }
-Monom::Monom(double _coefficent)
+Monom::Monom(double _coefficent) : factor{ _coefficent, {0,0,0} }
 {
-	factor.coefficient = _coefficent;
-	for (int i = 0; i < MONOM; i++) {
-		factor.powers[i] = 0;
-	}
+
 }
 Monom::Monom() {
 	factor.coefficient = 0.0;
@@ -76,28 +60,32 @@ Monom Monom::operator*(const Monom& other) {
 		factor.powers[1] + other.factor.powers[1],
 		factor.powers[2] + other.factor.powers[2]);
 }
-Monom Monom::operator*(double k) const {
-	return Monom(
-		factor.coefficient * k,
-		factor.powers[0], factor.powers[1], factor.powers[2]
-	);
-}
-Monom Monom::operator/(const Monom& other) { //проверить, обнулил ли я пустые полиномы(с коэф 0)
+//Monom Monom::operator*(double k) const {
+//	return Monom(
+//		factor.coefficient * k,
+//		factor.powers[0], factor.powers[1], factor.powers[2]
+//	);
+//}
+Monom Monom::operator/(const Monom& other) { 
+	double denom = other.getCoefficient();
+	if (std::abs(denom)<1e-11) {
+		throw std::invalid_argument("Division by zero");
+	}
 	return Monom(
 		factor.coefficient / other.factor.coefficient,
 		factor.powers[0] - other.factor.powers[0],
 		factor.powers[1] - other.factor.powers[1],
 		factor.powers[2] - other.factor.powers[2]);
 }
-Monom Monom::operator/(double k) const {
-	if (k < 1e-12 && k > 1e-12) {
-		throw std::runtime_error("Division by zero");
-	}
-	return Monom(
-		factor.coefficient / k,
-		factor.powers[0], factor.powers[1], factor.powers[2]
-	);
-}
+//Monom Monom::operator/(double k) const {
+//	if (k < 1e-12 && k > 1e-12) {
+//		throw std::runtime_error("Division by zero");
+//	}
+//	return Monom(
+//		factor.coefficient / k,
+//		factor.powers[0], factor.powers[1], factor.powers[2]
+//	);
+//}
 Monom Monom::operator+(const Monom& other) const {
 	if (!powerCompare(other)) {
 		throw std::invalid_argument("You cannot add dissimilar monomials");
@@ -128,19 +116,25 @@ Monom& Monom::operator=(const Monom& other) const {
 	return Monom(other.factor.coefficient, other.factor.powers[0], other.factor.powers[1], other.factor.powers[2]);
 }
 Monom Monom::operator*=(const Monom& other) {
-	*this = *this * other;
+	setCoefficient(getCoefficient() * other.getCoefficient());
+	setXPower(getXPower() + other.getXPower());
+	setYPower(getZPower() + other.getYPower());
+	setZPower(getZPower() + other.getZPower());
 	return *this;
 }
 Monom Monom::operator-=(const Monom& other) {
-	*this = *this - other;
+	setCoefficient(getCoefficient() - other.getCoefficient());
 	return *this;
 }
 Monom Monom::operator+=(const Monom& other) {
-	*this = *this + other;
+	setCoefficient(getCoefficient() + other.getCoefficient());
 	return *this;
 }
 Monom Monom::operator/=(const Monom& other) {
-	*this = *this / other;
+	setCoefficient(getCoefficient() / other.getCoefficient());
+	setXPower(getXPower() - other.getXPower());
+	setYPower(getZPower() - other.getYPower());
+	setZPower(getZPower() - other.getZPower());
 	return *this;
 }
 //################################################################
@@ -152,6 +146,23 @@ bool Monom::powerCompare(const Monom& other) const {
 	return factor.powers[0] == other.factor.powers[0] &&
 		factor.powers[1] == other.factor.powers[1] &&
 		factor.powers[2] == other.factor.powers[2];
+}
+
+double Monom::pow(double x, int power) {
+	if (power < 0) {
+		if (std::abs(x) < 1e-11) {
+			throw std::invalid_argument("Division by zero");
+		}
+	}
+	if (power == 0) return 1.0;
+	if (power < 0) return 1.0 / pow(x, -power);
+	if (power % 2 == 0) {
+		double half = pow(x, power / 2);
+		return half * half;
+	}
+	else {
+		return x * pow(x, power - 1);
+	}
 }
 //################################################################
 std::ostream& operator<<(std::ostream& os, const Monom& m) {

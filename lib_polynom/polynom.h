@@ -8,16 +8,15 @@ public:
 	Polynom(const Polynom& other);
 	Polynom(std::string expression);
 
-    bool lexGreater(const Monom& a, const Monom& b) {
-        if (a.getXPower() != b.getXPower())   return a.getXPower() > b.getXPower();
-        if (a.getYPower() != b.getYPower())   return a.getYPower() > b.getYPower();
-        return a.getZPower() > b.getZPower();
-    }
+    bool lexGreater(const Monom& a, const Monom& b);
+    void insertSorted(const Monom& m);
+    void normalize();
 
     Polynom operator+(const Monom& other);
     Polynom operator-(const Monom& other);
     Polynom operator*(const Monom& other);
 
-    Polynom operator+(const Polynom& other);
-    Polynom operator-(const Polynom& other);
+    Polynom operator+(Polynom& other);
+    Polynom operator-(Polynom& other);
+    Polynom operator*(Polynom& other);
 };

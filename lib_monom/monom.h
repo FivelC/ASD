@@ -85,6 +85,11 @@ public:
 	int getYPower() const { return factor.powers[1]; }
 	int getZPower() const { return factor.powers[2]; }
 
+	void setCoefficient(double coef) { factor.coefficient = coef; }
+	void setXPower(int x) { factor.powers[0] = x; }
+	void setYPower(int y) { factor.powers[1] = y; }
+	void setZPower(int z) { factor.powers[2] = z; }
+
 	double pow(double x, int power);
 	bool powerCompare(const Monom& other) const;
 
@@ -94,9 +99,9 @@ public:
 	bool operator==(const Monom& other) const;
 	bool operator!=(const Monom& other) const;
 	Monom operator*(const Monom& other);
-	Monom operator*(double k) const;
+	//Monom operator*(double k) const;
 	Monom operator/(const Monom& other);
-	Monom operator/(double k) const;
+	//Monom operator/(double k) const;
 	Monom operator+(const Monom& other) const;
 	Monom operator-(const Monom& other) const;
 	Monom operator-() const;

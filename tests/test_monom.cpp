@@ -2,17 +2,6 @@
 #include <iostream>
 #include "../lib_monom/monom.h"
 
-//TEST(MonomTest, Input) {
-//	Monom monom;
-//	unsigned int x_deg = 0, y_deg = 0, z_deg = 0;
-//	double coef = 0.0;
-//	monom.expression("123x^2y^3z^4", &x_deg, &y_deg, &z_deg, &coef);
-//
-//	EXPECT_EQ(coef, 123.0);  // коэффициент
-//	EXPECT_EQ(x_deg, 2);       // степень x
-//	EXPECT_EQ(y_deg, 3);       // степень y
-//	EXPECT_EQ(z_deg, 4);
-//}
 TEST(Monom_test, DefaultConstraction) {
     Monom a;
     EXPECT_EQ(a.getCoefficient(), 0.0);
@@ -58,6 +47,7 @@ TEST(Monom_test, OneInit) {
 
     EXPECT_THROW(Monom c(123.1, 1, 'u'), std::invalid_argument);
 }
+
 TEST(Monom_test, Copy) {
     Monom a(123.1, 1, 'y');
     Monom b(a);
@@ -66,4 +56,196 @@ TEST(Monom_test, Copy) {
     EXPECT_EQ(b.getYPower(), a.getYPower());
     EXPECT_EQ(b.getZPower(), a.getZPower());
 }
-//TEST(Monom_test, )
+
+TEST(Monom_test, CoefficientOnlyConstructor) {
+    Monom a(7.5);
+    EXPECT_DOUBLE_EQ(a.getCoefficient(), 7.5);
+    EXPECT_EQ(a.getXPower(), 0);
+    EXPECT_EQ(a.getYPower(), 0);
+    EXPECT_EQ(a.getZPower(), 0);
+
+    Monom b(-0.0);
+    EXPECT_DOUBLE_EQ(b.getCoefficient(), 0.0);
+}
+//#############################################
+
+TEST(Monom_test, EqualityAndInequality) {
+    Monom a(4.0, 2, 1, 0);
+    Monom b(4.0, 2, 1, 0);
+    Monom c(4.1, 2, 1, 0);
+    Monom d(4.0, 3, 1, 0);
+
+    EXPECT_TRUE(a == b);
+    EXPECT_TRUE(a == c); //cause powerCompare
+    EXPECT_FALSE(a == d);
+
+    EXPECT_FALSE(a != b);
+    EXPECT_FALSE(a != c);
+    EXPECT_TRUE(a != d);
+}
+
+TEST(Monom_test, MultiplicationMonomByMonom) {
+    Monom a(3.0, 2, 1, 0);
+    Monom b(2.0, -1, 0, -3);
+    Monom res = a * b;
+
+    EXPECT_DOUBLE_EQ(res.getCoefficient(), 6.0);
+    EXPECT_EQ(res.getXPower(), 1);
+    EXPECT_EQ(res.getYPower(), 1);
+    EXPECT_EQ(res.getZPower(), -3);
+}
+
+TEST(Monom_test, MultiplicationByScalar) {
+    Monom a(5.0, 1, 2, 3);
+    Monom b = a * 4.0;
+    Monom c = a * (-1.5);
+
+    EXPECT_DOUBLE_EQ(b.getCoefficient(), 20.0);
+    EXPECT_EQ(b.getXPower(), 1);
+    EXPECT_EQ(b.getYPower(), 2);
+    EXPECT_EQ(b.getZPower(), 3);
+
+    EXPECT_DOUBLE_EQ(c.getCoefficient(), -7.5);
+    EXPECT_EQ(c.getXPower(), 1);
+    EXPECT_EQ(c.getYPower(), 2);
+    EXPECT_EQ(c.getZPower(), 3);
+}
+
+TEST(Monom_test, DivisionMonomByMonom) {
+    Monom a(12.0, 4, 3, 2);
+    Monom b(3.0, 1, 1, 0);
+    Monom res = a / b;
+
+    EXPECT_DOUBLE_EQ(res.getCoefficient(), 4.0);
+    EXPECT_EQ(res.getXPower(), 3);
+    EXPECT_EQ(res.getYPower(), 2);
+    EXPECT_EQ(res.getZPower(), 2);
+}
+
+TEST(Monom_test, DivisionByScalar) {
+    Monom a(10.0, 2, 0, 1);
+    double k = 2.0;
+    Monom b = a / k;
+    EXPECT_DOUBLE_EQ(b.getCoefficient(), 5.0);
+
+    Monom c = a / (-0.5);
+    EXPECT_DOUBLE_EQ(c.getCoefficient(), -20.0);
+}
+
+TEST(Monom_test, DivisionByZeroScalarThrows) {
+    Monom a(7.0, 1, 1, 1);
+    EXPECT_THROW(a / 0.0, std::invalid_argument);
+    EXPECT_THROW(a / 1e-15, std::invalid_argument);
+    EXPECT_NO_THROW(a / 1e-11);                          
+}
+
+TEST(Monom_test, AdditionSamePowers) {
+    Monom a(5.0, 2, 1, 0);
+    Monom b(3.0, 2, 1, 0);
+    Monom c(-2.0, 2, 1, 0);
+
+    Monom sum1 = a + b;
+    EXPECT_DOUBLE_EQ(sum1.getCoefficient(), 8.0);
+    EXPECT_EQ(sum1.getXPower(), 2);
+    EXPECT_EQ(sum1.getYPower(), 1);
+    EXPECT_EQ(sum1.getZPower(), 0);
+
+    Monom sum2 = a + c;
+    EXPECT_DOUBLE_EQ(sum2.getCoefficient(), 3.0);
+}
+
+TEST(Monom_test, AdditionDifferentPowersThrows) {
+    Monom a(1.0, 1, 0, 0);
+    Monom b(1.0, 0, 1, 0);
+    EXPECT_THROW(a + b, std::invalid_argument);
+}
+
+TEST(Monom_test, SubtractionSamePowers) {
+    Monom a(7.5, 3, 0, 2);
+    Monom b(2.5, 3, 0, 2);
+
+    Monom diff = a - b;
+    EXPECT_DOUBLE_EQ(diff.getCoefficient(), 5.0);
+    EXPECT_EQ(diff.getXPower(), 3);
+    EXPECT_EQ(diff.getZPower(), 2);
+}
+
+TEST(Monom_test, SubtractionDifferentPowersThrows) {
+    Monom a(4.0, 0, 2, 0);
+    Monom b(1.0, 1, 0, 0);
+    EXPECT_THROW(a - b, std::invalid_argument);
+}
+
+TEST(Monom_test, UnaryMinus) {
+    Monom a(6.4, 1, 2, 1);
+    Monom b = -a;
+
+    EXPECT_DOUBLE_EQ(b.getCoefficient(), -6.4);
+    EXPECT_EQ(b.getXPower(), 1);
+    EXPECT_EQ(b.getYPower(), 2);
+    EXPECT_EQ(b.getZPower(), 1);
+
+    Monom c(0.0, 5, 0, 0);
+    Monom d = -c;
+    EXPECT_DOUBLE_EQ(d.getCoefficient(), 0.0);
+}
+
+TEST(Monom_test, CompoundAssignmentOperators) {
+    Monom a(2.0, 1, 0, 0);
+    Monom b(3.0, 0, 1, 0);
+
+    a *= Monom(4.0, 1, 0, 0);
+    EXPECT_DOUBLE_EQ(a.getCoefficient(), 8.0);
+    EXPECT_EQ(a.getXPower(), 2);
+
+    Monom c(10.0, 2, 2, 2);
+    c /= 5.0;
+    EXPECT_DOUBLE_EQ(c.getCoefficient(), 2.0);
+
+    Monom d(7.0, 1, 1, 1);
+    d += Monom(3.0, 1, 1, 1);
+    EXPECT_DOUBLE_EQ(d.getCoefficient(), 10.0);
+
+    Monom e(8.0, 3, 0, 0);
+    e -= Monom(5.0, 3, 0, 0);
+    EXPECT_DOUBLE_EQ(e.getCoefficient(), 3.0);
+}
+//######################################################
+TEST(Monom_test, EvaluateSimple) {
+    Monom m(4.0, -2, 1, 0); 
+
+    EXPECT_DOUBLE_EQ(m.solve(2.0, 3.0, 5.0), 4.0 * 0.25 * 3.0);
+    EXPECT_DOUBLE_EQ(m.solve(1.0, 1.0, 1.0), 4.0);
+    EXPECT_THROW(m.solve(0.0, 5.0, 7.0), std::invalid_argument);
+}
+
+TEST(Monom_test, EvaluateZeroCoefficient) {
+    Monom m(0.0, 10, 10, 10);
+    EXPECT_DOUBLE_EQ(m.solve(2.0, 3.0, 4.0), 0.0);
+    EXPECT_DOUBLE_EQ(m.solve(0.0, 0.0, 0.0), 0.0);
+}
+
+TEST(Monom_test, PowerCompareInternal) {
+    Monom a(1.0, 2, 3, 4);
+    Monom b(9.9, 2, 3, 4);
+    Monom c(1.0, 2, 4, 4);
+
+    EXPECT_TRUE(a.powerCompare(b));
+    EXPECT_FALSE(a.powerCompare(c));
+}
+TEST(Monom_test, Output) {
+    Monom a(1.2, 2, 3, 4);
+    std::ostringstream oss1;
+    oss1 << a;
+    EXPECT_EQ(oss1.str(), "1.2x^2y^3z^4");
+
+    Monom b(1.2);
+    std::ostringstream oss2;
+    oss2 << b;
+    EXPECT_EQ(oss2.str(), "1.2");
+
+    Monom c(1.2, 0, 3, 0);
+    std::ostringstream oss3;
+    oss3 << c;
+    EXPECT_EQ(oss3.str(), "1.2y^3");
+}
