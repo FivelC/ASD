@@ -42,14 +42,14 @@ public:
 
 	bool operator==(const Monom& other) const;
 	bool operator!=(const Monom& other) const;
-	Monom operator*(const Monom& other);
+	Monom operator*(const Monom& other) const;
 	//Monom operator*(double k) const;
-	Monom operator/(const Monom& other);
+	Monom operator/(const Monom& other) const;
 	//Monom operator/(double k) const;
 	Monom operator+(const Monom& other) const;
 	Monom operator-(const Monom& other) const;
 	Monom operator-() const;
-	Monom& operator=(const Monom& other) const;
+	Monom& operator=(const Monom& other);
 	Monom operator*=(const Monom& other);
 	Monom operator-=(const Monom& other);
 	Monom operator+=(const Monom& other);

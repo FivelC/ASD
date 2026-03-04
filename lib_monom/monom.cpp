@@ -53,7 +53,7 @@ bool Monom::operator==(const Monom& other) const {
 bool Monom::operator!=(const Monom& other) const {
 	return !(*this == other);
 }
-Monom Monom::operator*(const Monom& other) {
+Monom Monom::operator*(const Monom& other) const{
 	return Monom(
 		factor.coefficient * other.factor.coefficient,
 		factor.powers[0] + other.factor.powers[0],
@@ -66,7 +66,7 @@ Monom Monom::operator*(const Monom& other) {
 //		factor.powers[0], factor.powers[1], factor.powers[2]
 //	);
 //}
-Monom Monom::operator/(const Monom& other) { 
+Monom Monom::operator/(const Monom& other) const{ 
 	double denom = other.getCoefficient();
 	if (std::abs(denom)<1e-11) {
 		throw std::invalid_argument("Division by zero");
@@ -112,8 +112,11 @@ Monom Monom::operator-() const {
 		factor.powers[0], factor.powers[1], factor.powers[2]
 	);
 }
-Monom& Monom::operator=(const Monom& other) const {
-	return Monom(other.factor.coefficient, other.factor.powers[0], other.factor.powers[1], other.factor.powers[2]);
+Monom& Monom::operator=(const Monom& other) {
+	if (this != &other) {
+		factor = other.factor;
+	}
+	return *this;
 }
 Monom Monom::operator*=(const Monom& other) {
 	setCoefficient(getCoefficient() * other.getCoefficient());

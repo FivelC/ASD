@@ -18,6 +18,13 @@ TEST(PolynomTest, CopyConstructor) {
     EXPECT_EQ(p2.size(), 2);
 }
 
+TEST(PolynomTest, String) {
+    Polynom p1("123.1x^2 + 34x^3y^4z^5");
+    std::ostringstream oss1;
+    oss1 << p1;
+
+    EXPECT_EQ(oss1.str(), "34x^3y^4z^5 + 123.1x^2");
+}
 
 TEST(PolynomTest, InsertSorted_BasicOrder) {
     Polynom p;
@@ -157,4 +164,15 @@ TEST(PolynomTest, Output) {
     std::ostringstream oss1;
     oss1 << p1;
     EXPECT_EQ(oss1.str(), "-4x^5 + 2x^3y^2z^1");
+}
+TEST(MonomTest, Input) {
+    std::istringstream iss("3.5 2 1 0");
+
+    Monom m;
+    iss >> m;
+
+    EXPECT_DOUBLE_EQ(m.getCoefficient(), 3.5);
+    EXPECT_EQ(m.getXPower(), 2);
+    EXPECT_EQ(m.getYPower(), 1);
+    EXPECT_EQ(m.getZPower(), 0);
 }

@@ -8,48 +8,7 @@ Polynom::Polynom(const Polynom& other) {
 	polynom = other.polynom;
 }
 Polynom::Polynom(std::string expression) {
-	//парсер
-	//void Monom::expression(std::string exem, unsigned int* x_degre, unsigned int* y_degre, unsigned int* z_degre, double* coef) {
-//	int i = 0;
-//	double tmp_coef = 0.0;
-//	while (i < exem.size() - 1 && (std::isdigit(exem[i]) || exem[i] == '.')) {
-//		if (exem[i] == '.') {
-//			i++;
-//			while (i < exem.size() && std::isdigit(exem[i])) {
-//				tmp_coef *= 0.1;
-//				tmp_coef = tmp_coef * 10 + (exem[i] - '0');
-//				i++;
-//			}
-//			break;
-//		}
-//		tmp_coef = tmp_coef * 10 + (exem[i] - '0');
-//		i++;
-//	}
-//	*coef = tmp_coef;
-//
-//
-//	while (i < exem.size()) {
-//		if (!std::isalpha(exem[i])) {
-//			i++;              
-//			continue;
-//		}
-//
-//		char var = exem[i++];
-//		unsigned int deg = 1;
-//
-//		if (i < exem.size() && exem[i] == '^') {
-//			i++;
-//			deg = 0;
-//			while (i < exem.size() && std::isdigit(exem[i])) {
-//				deg = deg * 10 + (exem[i] - '0');
-//				i++;
-//			}
-//		}
-//
-//		if (var == 'x') *x_degre = deg;
-//		else if (var == 'y') *y_degre = deg;
-//		else if (var == 'z') *z_degre = deg;
-//	}
+    *this = parse(expression);
 }
 //##########################################################
 Polynom& Polynom::operator=(const Polynom& other) {
@@ -75,7 +34,7 @@ Polynom Polynom::operator-(const Monom& other) {
 
 Polynom Polynom::operator*(const Monom& other){
 	Polynom res;
-	for (auto it = polynom.begin(); it != polynom.end(); ++it) {
+	for (auto it = begin(); it != end(); ++it) {
 		Monom prod = *it * other;
 		res.insertSorted(prod);
 	}
@@ -85,7 +44,7 @@ Polynom Polynom::operator*(const Monom& other){
 Polynom Polynom::operator+( Polynom& other){
 	Polynom result = *this;
 
-	for (auto it = other.polynom.begin(); it != other.polynom.end(); ++it) {
+	for (auto it = other.begin(); it != other.end(); ++it) {
 		result.insertSorted(*it);
 	}
 
@@ -95,7 +54,7 @@ Polynom Polynom::operator+( Polynom& other){
 Polynom Polynom::operator-(Polynom& other) {
 	Polynom result = *this;
 
-	for (auto it = other.polynom.begin(); it != other.polynom.end(); ++it) {
+	for (auto it = other.begin(); it != other.end(); ++it) {
 		Monom negated = *it;
 		negated.setCoefficient(-negated.getCoefficient());
 		result.insertSorted(negated);
@@ -105,8 +64,8 @@ Polynom Polynom::operator-(Polynom& other) {
 Polynom Polynom::operator*(Polynom& other)
 {
 	Polynom res;
-	for (auto it1 = polynom.begin(); it1 != polynom.end(); ++it1) {
-		for (auto it2 = other.polynom.begin(); it2 != other.polynom.end(); ++it2) {
+	for (auto it1 = begin(); it1 != end(); ++it1) {
+		for (auto it2 = other.begin(); it2 != other.end(); ++it2) {
 			res.insertSorted((*it1) * (*it2));
 		}
 	}
@@ -116,9 +75,9 @@ Polynom Polynom::operator*(Polynom& other)
 void Polynom::insertSorted(const Monom& m) {
 	if (m.getCoefficient() == 0) return;
 
-	auto it = polynom.begin();
+	auto it = begin();
 	size_t pos = 0;
-	while (it != polynom.end() && !lexGreater(m, *it)) {
+	while (it != end() && !lexGreater(m, *it)) {
 		++it;
 		pos++;
 	}
@@ -127,12 +86,12 @@ void Polynom::insertSorted(const Monom& m) {
 }
 void Polynom::normalize() {
 
-	for (auto it = polynom.begin(); it != polynom.end(); ) {
+	for (auto it = begin(); it != end(); ) {
 
 		auto jt = it;
 		++jt;
 
-		while (jt != polynom.end()) {
+		while (jt != end()) {
 
 			if (*it == *jt) {
 
@@ -159,6 +118,124 @@ bool Polynom::lexGreater(const Monom& a, const Monom& b) {
 	if (a.getXPower() != b.getXPower())   return a.getXPower() > b.getXPower();
 	if (a.getYPower() != b.getYPower())   return a.getYPower() > b.getYPower();
 	return a.getZPower() > b.getZPower();
+}
+
+Polynom Polynom::parse(const std::string& s) {
+
+    enum class State {
+        Start,
+        Coefficient,
+        Variable,
+        PowerStart,
+        Power
+    };
+
+    Polynom result;
+
+    State state = State::Start;
+
+    double coef = 1.0;
+    int x = 0, y = 0, z = 0;
+    int sign = 1;
+
+    std::string buffer;
+    char currentVar = 0;
+
+    auto flushTerm = [&]() {
+        result.insertSorted(Monom(sign * coef, x, y, z));
+        coef = 1.0;
+        x = 0;
+        y = 0;
+        z = 0;
+        sign = 1;
+    };
+
+    for (size_t i = 0; i <= s.size(); ++i) {
+
+        char c = (i < s.size()) ? s[i] : '\0';
+
+        if (c == ' ') continue;
+
+        switch (state) {
+
+        case State::Start:
+            if (c == '+' || c == '-') {
+                if (i != 0) {
+                    flushTerm();
+                }
+                sign = (c == '+') ? 1 : -1;
+            }
+            else if (isdigit(c) || c == '.') {
+                buffer += c;
+                state = State::Coefficient;
+            }
+            else if (c == 'x' || c == 'y' || c == 'z') {
+                currentVar = c;
+                state = State::Variable;
+            }
+            else if (c == '\0') {
+                flushTerm();
+            }
+            else {
+                throw std::invalid_argument("Unexpected character");
+            }
+
+            break;
+
+        case State::Coefficient:
+            if (isdigit(c) || c == '.') {
+                buffer += c;
+            }
+            else {
+                coef = std::stod(buffer);
+                buffer.clear();
+                state = State::Start;
+                --i;
+            }
+            break;
+
+        case State::Variable:
+            if (c == '^') {
+                state = State::PowerStart;
+            }
+            else {
+                if (currentVar == 'x') x = 1;
+                if (currentVar == 'y') y = 1;
+                if (currentVar == 'z') z = 1;
+
+                state = State::Start;
+                --i;
+            }
+            break;
+
+        case State::PowerStart:
+            if (!isdigit(c))
+                throw std::invalid_argument("Expected digit after ^");
+
+            buffer += c;
+            state = State::Power;
+            break;
+
+        case State::Power:
+            if (isdigit(c)) {
+                buffer += c;
+            }
+            else {
+                int power = std::stoi(buffer);
+                buffer.clear();
+
+                if (currentVar == 'x') x = power;
+                if (currentVar == 'y') y = power;
+                if (currentVar == 'z') z = power;
+
+                state = State::Start;
+                --i;
+            }
+            break;
+        }
+    }
+
+    return result;
 }
 //##########################################################
 std::ostream& operator<<(std::ostream& ostr, Polynom& p) {
