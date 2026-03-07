@@ -20,6 +20,9 @@ add_subdirectory(lib_stack)
 add_subdirectory(lib_lexem)
 add_subdirectory(lib_expression)
 add_subdirectory(lib_parser)
+add_subdirectory(lib_itable)
+add_subdirectory(lib_sortedtable)
+add_subdirectory(lib_unsortedtable)
 add_subdirectory(lib_doubly_linked_list)
 add_subdirectory(main)                # подключаем дополнительный CMakeLists.txt из подкаталога с именем main
 

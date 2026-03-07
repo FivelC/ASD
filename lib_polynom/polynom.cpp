@@ -139,7 +139,7 @@ Polynom Polynom::parse(const std::string& s) {
     int sign = 1;
 
     std::string buffer;
-    char currentVar = 0;
+    char currentVar;
 
     auto flushTerm = [&]() {
         result.insertSorted(Monom(sign * coef, x, y, z));
