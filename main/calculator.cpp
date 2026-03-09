@@ -1,4 +1,6 @@
-﻿#include <iostream>
+﻿#define MAT
+#ifdef CALCULATOR
+#include <iostream>
 #include <string>
 #include "..\lib_TVector\TVector.h"
 //#include "..\lib_parser\Parser.h"
@@ -258,3 +260,5 @@ int main() {
 //// Result: 24
 //// Result: 19
 //}
+
+#endif
