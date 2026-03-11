@@ -54,56 +54,37 @@ bool Monom::operator!=(const Monom& other) const {
 	return !(*this == other);
 }
 Monom Monom::operator*(const Monom& other) const{
-	return Monom(
-		factor.coefficient * other.factor.coefficient,
-		factor.powers[0] + other.factor.powers[0],
-		factor.powers[1] + other.factor.powers[1],
-		factor.powers[2] + other.factor.powers[2]);
+	Monom m = *this;
+	m *= other;
+	return m;
 }
-//Monom Monom::operator*(double k) const {
-//	return Monom(
-//		factor.coefficient * k,
-//		factor.powers[0], factor.powers[1], factor.powers[2]
-//	);
-//}
+
 Monom Monom::operator/(const Monom& other) const{ 
 	double denom = other.getCoefficient();
 	if (std::abs(denom)<1e-11) {
 		throw std::invalid_argument("Division by zero");
 	}
-	return Monom(
-		factor.coefficient / other.factor.coefficient,
-		factor.powers[0] - other.factor.powers[0],
-		factor.powers[1] - other.factor.powers[1],
-		factor.powers[2] - other.factor.powers[2]);
+	Monom m = *this;
+	m /= other;
+	return m;
 }
-//Monom Monom::operator/(double k) const {
-//	if (k < 1e-12 && k > 1e-12) {
-//		throw std::runtime_error("Division by zero");
-//	}
-//	return Monom(
-//		factor.coefficient / k,
-//		factor.powers[0], factor.powers[1], factor.powers[2]
-//	);
-//}
-Monom Monom::operator+(const Monom& other) const {
+
+Monom Monom::operator+(const Monom& other) const { 
 	if (!powerCompare(other)) {
 		throw std::invalid_argument("You cannot add dissimilar monomials");
 	}
-	return Monom(
-		factor.coefficient + other.factor.coefficient,
-		factor.powers[0], factor.powers[1], factor.powers[2]
-	);
+	Monom m = *this; 
+	m += other;
+	return m;
 }
 
 Monom Monom::operator-(const Monom& other) const {
 	if (!powerCompare(other)) {
 		throw std::invalid_argument("You cannot add dissimilar monomials");
 	}
-	return Monom(
-		factor.coefficient - other.factor.coefficient,
-		factor.powers[0], factor.powers[1], factor.powers[2]
-	);
+	Monom m = *this;
+	m -= other;
+	return m;
 }
 
 Monom Monom::operator-() const {
@@ -121,7 +102,7 @@ Monom& Monom::operator=(const Monom& other) {
 Monom Monom::operator*=(const Monom& other) {
 	setCoefficient(getCoefficient() * other.getCoefficient());
 	setXPower(getXPower() + other.getXPower());
-	setYPower(getZPower() + other.getYPower());
+	setYPower(getYPower() + other.getYPower());
 	setZPower(getZPower() + other.getZPower());
 	return *this;
 }
@@ -136,7 +117,7 @@ Monom Monom::operator+=(const Monom& other) {
 Monom Monom::operator/=(const Monom& other) {
 	setCoefficient(getCoefficient() / other.getCoefficient());
 	setXPower(getXPower() - other.getXPower());
-	setYPower(getZPower() - other.getYPower());
+	setYPower(getYPower() - other.getYPower());
 	setZPower(getZPower() - other.getZPower());
 	return *this;
 }
@@ -151,7 +132,7 @@ bool Monom::powerCompare(const Monom& other) const {
 		factor.powers[2] == other.factor.powers[2];
 }
 
-double Monom::pow(double x, int power) {
+double pow(double x, int power) {
 	if (power < 0) {
 		if (std::abs(x) < 1e-11) {
 			throw std::invalid_argument("Division by zero");

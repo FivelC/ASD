@@ -16,14 +16,17 @@ include(cmake/function.cmake)         # подхватываем функции,
 add_subdirectory(lib_monom)
 add_subdirectory(lib_polynom)
 add_subdirectory(lib_list)
+add_subdirectory(lib_skiplist)
 add_subdirectory(lib_stack)
 add_subdirectory(lib_lexem)
 add_subdirectory(lib_expression)
 add_subdirectory(lib_parser)
 add_subdirectory(lib_itable)
+add_subdirectory(lib_tablebase)
 add_subdirectory(lib_TVector)
 add_subdirectory(lib_sortedtable)
 add_subdirectory(lib_unsortedtable)
+add_subdirectory(lib_unsortedtablelist)
 add_subdirectory(lib_doubly_linked_list)
 add_subdirectory(main)                # подключаем дополнительный CMakeLists.txt из подкаталога с именем main
 

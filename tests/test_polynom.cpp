@@ -145,17 +145,52 @@ TEST(PolynomTest, OperatorMinus_Polynom) {
 }
 
 
-TEST(PolynomTest, OperatorMultiply_Polynom_Simple) {
+TEST(PolynomTest, OperatorMultiply_Polynom_Simple) { //сложнее сделать 
     Polynom p1, p2;
-    p1.insertSorted(Monom(2.0, 1, 0, 0));   // 2x
-    p2.insertSorted(Monom(3.0, 0, 1, 0));   // 3y
+    // Полином p1: 2x + 3y + 1
+    p1.insertSorted(Monom(2.0, 1, 0, 0));  // 2x
+    p1.insertSorted(Monom(3.0, 0, 1, 0));  // 3y
+    p1.insertSorted(Monom(1.0, 0, 0, 0));  // 1
 
-    Polynom res = p1 * p2;                  // 6xy
+    // Полином p2: x - y + 2
+    p2.insertSorted(Monom(1.0, 1, 0, 0));   // x
+    p2.insertSorted(Monom(-1.0, 0, 1, 0));  // -y
+    p2.insertSorted(Monom(2.0, 0, 0, 0));   // 2
 
-    EXPECT_EQ(res.size(), 1);
-    EXPECT_DOUBLE_EQ(res.begin()->getCoefficient(), 6.0);
-    EXPECT_EQ(res.begin()->getXPower(), 1);
-    EXPECT_EQ(res.begin()->getYPower(), 1);
+
+    Polynom res = p1 * p2;                  // 2x^2 + xy - 3y^2 + 5x + 5y + 2
+
+    EXPECT_EQ(res.size(), 6);
+    auto it = res.begin();
+
+    EXPECT_DOUBLE_EQ(it->getCoefficient(), 2.0); // 2x^2
+    EXPECT_EQ(it->getXPower(), 2);
+    EXPECT_EQ(it->getYPower(), 0);
+    ++it;
+
+    EXPECT_DOUBLE_EQ(it->getCoefficient(), 1.0); // xy
+    EXPECT_EQ(it->getXPower(), 1);
+    EXPECT_EQ(it->getYPower(), 1);
+    ++it;
+
+    EXPECT_DOUBLE_EQ(it->getCoefficient(), 5.0); // 5x
+    EXPECT_EQ(it->getXPower(), 1);
+    EXPECT_EQ(it->getYPower(), 0);
+    ++it;
+
+    EXPECT_DOUBLE_EQ(it->getCoefficient(), -3.0); // -3y^2
+    EXPECT_EQ(it->getXPower(), 0);
+    EXPECT_EQ(it->getYPower(), 2);
+    ++it;
+
+    EXPECT_DOUBLE_EQ(it->getCoefficient(), 5.0); // 5y
+    EXPECT_EQ(it->getXPower(), 0);
+    EXPECT_EQ(it->getYPower(), 1);
+    ++it;
+
+    EXPECT_DOUBLE_EQ(it->getCoefficient(), 2.0); // 2
+    EXPECT_EQ(it->getXPower(), 0);
+    EXPECT_EQ(it->getYPower(), 0);
 }
 TEST(PolynomTest, Output) {
     Polynom p1;

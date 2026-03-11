@@ -76,51 +76,34 @@ void Polynom::insertSorted(const Monom& m) {
 	if (m.getCoefficient() == 0) return;
 
 	auto it = begin();
-	size_t pos = 0;
+    size_t pos = 0;
 	while (it != end() && !lexGreater(m, *it)) {
+        if (it->powerCompare(m)) {
+            Monom sum = *it + m;
+            if (sum.getCoefficient() == 0.0) {
+                it = polynom.erase(it);
+            }
+            else {
+                *it = sum;
+                ++it;
+                pos++;
+            }
+            return;
+        }
 		++it;
-		pos++;
+        pos++;
 	}
+
 	polynom.insert(pos, m);
-	normalize();
 }
-void Polynom::normalize() {
 
-	for (auto it = begin(); it != end(); ) {
-
-		auto jt = it;
-		++jt;
-
-		while (jt != end()) {
-
-			if (*it == *jt) {
-
-				it->setCoefficient(
-					it->getCoefficient() + jt->getCoefficient()
-				);
-
-				jt = polynom.erase(jt); //special for iterator
-			}
-			else {
-				++jt;
-			}
-		}
-
-		if (it->getCoefficient() == 0.0) {
-			it = polynom.erase(it);
-		}
-		else {
-			++it;
-		}
-	}
-}
 bool Polynom::lexGreater(const Monom& a, const Monom& b) {
 	if (a.getXPower() != b.getXPower())   return a.getXPower() > b.getXPower();
 	if (a.getYPower() != b.getYPower())   return a.getYPower() > b.getYPower();
 	return a.getZPower() > b.getZPower();
 }
 
-Polynom Polynom::parse(const std::string& s) {
+Polynom Polynom::parse(const std::string& s) { //улучшить читабельность
 
     enum class State {
         Start,

@@ -16,7 +16,6 @@ class Monom {
 
 public:
 
-
 	Monom(double _coefficent, int x, int y, int z);
 	Monom(double _coefficent, int x, int y, char val1, char val2);
 	Monom(double _coefficent, int x, char val);
@@ -34,7 +33,6 @@ public:
 	void setYPower(int y) { factor.powers[1] = y; }
 	void setZPower(int z) { factor.powers[2] = z; }
 
-	double pow(double x, int power);
 	bool powerCompare(const Monom& other) const;
 
 	double solve(double _x, double  _y, double _z);
@@ -58,4 +56,5 @@ public:
 	friend std::ostream& operator<<(std::ostream& ostr, const Monom& m);
 	friend std::istream& operator>>(std::istream& istr, Monom& m);
 };
+double pow(double x, int power);
 #endif

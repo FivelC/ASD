@@ -30,6 +30,7 @@ public:
     Polynom operator+(Polynom& other);
     Polynom operator-(Polynom& other);
     Polynom operator*(Polynom& other);
+     //+= через + ..
 
     friend std::ostream& operator<<(std::ostream& ostr, Polynom& p);
 };

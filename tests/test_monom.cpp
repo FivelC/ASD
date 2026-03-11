@@ -76,7 +76,7 @@ TEST(MonomTest, EqualityAndInequality) {
     Monom d(4.0, 3, 1, 0);
 
     EXPECT_TRUE(a == b);
-    EXPECT_TRUE(a == c); //cause powerCompare
+    EXPECT_TRUE(a == c);
     EXPECT_FALSE(a == d);
 
     EXPECT_FALSE(a != b);
