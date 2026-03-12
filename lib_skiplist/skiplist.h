@@ -2,59 +2,67 @@
 #define SKIPLIST_H
 #include <iostream>
 #include "../lib_TVector/TVector.h"
-#define LEVEL 5
-template <class TKey,class TVal>
-class SkipList {
-	struct Node {
-		std::pair<TKey, TVal> data;
-		TVector<Node*> next;
-		Node(const TKey& key, const TVal& value, int level)
-			: data(key, value), next(level + 1, nullptr) {}
-	};
+const int maxNumberOfLevel = 5;
+class Node
+{
+public:
 
-	Node* _head;
-	int _level;
+    int data;
+    std::vector<Node*> next;  
+    Node(int data, int Level) : data(data), next(Level + 1, nullptr) {} 
+};
+
+class skipList {
+private:
+    Node* head;
+    int Level;
 
 public:
-	skipList(){
-		_head = new Node(0, LEVEL);
-		_level = 0;
-	}
-    void insert(int data)
+    skipList::skipList()
+    {
+        head = new Node(0, maxNumberOfLevel);    
+
+        Level = 0;                             
+
+    }
+
+    void skipList::insert(int data)
     {
         int newLevel = 0;
 
-        while (newLevel < maxNumberOfLevel && (rand() % 2) == 1)
+        while (newLevel < maxNumberOfLevel && (rand() % 2) == 1) 
         {
             newLevel++;
         }
 
-        if (_level < newLevel)
+        if (Level < newLevel)
         {
-            _head->next.resize(newLevel + 1);
+            head->next.resize(newLevel + 1);
 
-            _level = newLevel;
+            Level = newLevel;
         }
 
 
-        Node* current = _head;
+        Node* current = head;
 
 
-        TVector<Node*> Update(Level + 1, nullptr);
+        std::vector<Node*> Update(Level + 1);
 
         for (int i = Level; i >= 0; i--)
         {
-            while (current->next[i] and current->next[i]->data < data)
+
+            while (current->next[i] && current->next[i]->data < data)
             {
                 current = current->next[i];
             }
+
             Update[i] = current;
 
         }
 
         current = current->next[0];
 
-        if (current == nullptr or current->data != data)
+        if (current == nullptr || current->data != data) 
         {
             Node* newNode = new Node(data, Level);
 
@@ -62,19 +70,54 @@ public:
             {
                 newNode->next[i] = Update[i]->next[i];
 
-                Update[i]->next[i] = newNode;
+                Update[i]->next[i] = newNode; 
 
             }
 
-            cout << "Element " << data << " inserted successfully.\n";
+            std::cout << "Element " << data << " inserted successfully.\n";
         }
         else
         {
-            cout << "Element " << data << " already exists.\n";
+           std:: cout << "Element " << data << " already exists.\n";  
         }
     }
-	void remove(int data);
-	bool find(int data);
-	void print();
+
+    bool skipList::search(int data)
+    {
+        Node* current = head;           
+
+
+        for (int i = Level; i >= 0; i--) 
+        {
+            while (current->next[i] && current->next[i]->data < data) 
+            {
+                current = current->next[i]; 
+
+            }
+        }
+
+        current = current->next[0];
+    }
+
+    void skipList::display()
+    {
+
+        std::cout << "skip List:" << std::endl;
+
+        for (int i = Level; i >= 0; i--) // 
+        {
+            Node* current = head->next[i];
+
+            std::cout << "Level " << i << ": ";
+
+            while (current != nullptr)
+            {
+                std::cout << current->data << " ";
+                current = current->next[i];
+            }
+            std::cout << std::endl;
+        }
+    }
+
 };
 #endif
