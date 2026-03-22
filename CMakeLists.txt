@@ -27,6 +27,7 @@ add_subdirectory(lib_TVector)
 add_subdirectory(lib_sortedtable)
 add_subdirectory(lib_unsortedtable)
 add_subdirectory(lib_unsortedtablelist)
+add_subdirectory(lib_basictree)
 add_subdirectory(lib_doubly_linked_list)
 add_subdirectory(main)                # подключаем дополнительный CMakeLists.txt из подкаталога с именем main
 
