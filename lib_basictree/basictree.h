@@ -1,4 +1,5 @@
 #include "../lib_TVector/TVector.h"
+#include "../lib_queue/queue.h"
 template <typename TKey, typename TVal>
 class BasicTree {
 	struct Node {
