@@ -3,12 +3,11 @@
 
 #include <iostream>
 #include <ctime>
-#include <utility> 
 #include "../lib_TVector/TVector.h" 
 
 const int maxNumberOfLevel = 5;
 
-template <class TKey, class TValue>
+template <typename TKey, typename TValue>
 class Node {
 public:
     std::pair<TKey, TValue> data;
@@ -23,7 +22,7 @@ public:
     }
 };
 
-template <class TKey, class TValue>
+template <typename TKey, typename TValue>
 class skipList {
 private:
     Node<TKey, TValue>* head;
@@ -51,8 +50,9 @@ public:
         TVector<Node<TKey, TValue>*> update;
         update.resize(maxNumberOfLevel + 1);
 
-        for (int i = 0; i <= maxNumberOfLevel; i++)
+        for (int i = 0; i <= maxNumberOfLevel; i++) {
             update[i] = nullptr;
+        }
 
         Node<TKey, TValue>* current = find(key, update);
 
@@ -67,9 +67,9 @@ public:
         }
 
         if (newLevel > currentLevel) {
-            for (int i = currentLevel + 1; i <= newLevel; i++)
+            for (int i = currentLevel + 1; i <= newLevel; i++) {
                 update[i] = head;
-
+            }
             currentLevel = newLevel;
         }
 
@@ -81,10 +81,10 @@ public:
         }
     }
     bool search(TKey key) {
-        TVector<Node<TKey, TValue>*> dummy;
-        dummy.resize(maxNumberOfLevel + 1);
+        TVector<Node<TKey, TValue>*> update;
+        update.resize(maxNumberOfLevel + 1);
 
-        Node<TKey, TValue>* node = find(key, dummy);
+        Node<TKey, TValue>* node = find(key, update);
 
         return node != nullptr && node->data.first == key;
     }

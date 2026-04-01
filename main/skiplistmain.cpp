@@ -28,12 +28,14 @@ int main() {
         }
     }
 
-    std::cout << "\n=== Testing with different types (double, char) ===" << std::endl;
-    skipList<double, int> charMap;
-    charMap.insert(1.1, 1);
-    charMap.insert(2.2, 2);
-    charMap.insert(0.5, 0);
-    charMap.display();
-
+    std::cout << "\n==========================" << std::endl;
+    skipList<double, int> intMap;
+    intMap.insert(1.1, 1);
+    intMap.insert(2.2, 2);
+    intMap.insert(0.5, 0);
+    intMap.display();
+    std::cout << "\n==========================" << std::endl;
+    skipList<double, int> intMap2;
+    intMap2.display();
     return 0;
 }
