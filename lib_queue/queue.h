@@ -35,7 +35,7 @@ public:
 	inline bool isFull() const noexcept { return _count == _size; };
 	inline size_t sizeReal() const noexcept { return _count; }
 	inline size_t size() const noexcept { return _size; }
-
+	inline bool empty() const noexcept { return _size == 0; }
 	Queue& operator=(const Queue&);
 };
 
