@@ -1,174 +1,131 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "../lib_basehash/basehash.h"
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  Хеш-таблица с двойным хешированием (открытая адресация)
-//
-//  Все элементы хранятся прямо в массиве, списков нет.
-//  При коллизии ищем следующую свободную ячейку по формуле:
-//    idx = (h1(key) + i * h2(key)) % size,   i = 0, 1, 2, ...
-//
-//  Важно: размер таблицы должен быть простым числом,
-//  а h2 никогда не должна возвращать 0 (иначе зациклимся на месте).
-// ═══════════════════════════════════════════════════════════════════════════
+enum class State {
+    Empty,
+    Occupied,
+    Deleted
+};
 
 template <typename TKey, typename TVal>
-class HashDouble {
-
-    enum class State { EMPTY, USED, DELETED };
-
+class HashDouble : public BaseHash<TKey, TVal> {
     struct Cell {
-        TKey  key;
-        TVal  val;
-        State state = State::EMPTY;
+        std::pair<TKey, TVal> data;
+        State state = State::Empty;
     };
 
-    std::vector<Cell> _table;
-    int _size;
-    int _count = 0;
+    std::vector<Cell> table;
 
-    // Первая хеш-функция — начальная позиция
-    int h1(const TKey& key) const {
-        return key % _size;
+    size_t hash2(const TKey& key) const {
+        if (this->_capacity <= 2) return 1;
+        const std::string str = this->toString(key);
+        size_t hash = 5381;
+        for (size_t i = 0; i < str.size(); ++i)
+            hash = hash * 31 + str[i];
+        hash = hash % (this->_capacity - 1);
+        return (hash == 0) ? 1 : hash;
     }
 
-    // Вторая хеш-функция — шаг при коллизии.
-    // Формула 1 + key % (size-1) гарантирует результат от 1 до size-1.
-    int h2(const TKey& key) const {
-        return 1 + key % (_size - 1);
+    void rehash() {
+        size_t newCapacity = this->nextPrime(this->_capacity * 2);
+        std::vector<Cell> newTable(newCapacity);
+        size_t oldCapacity = this->_capacity;
+        this->_capacity = newCapacity;
+        for (size_t i = 0; i < oldCapacity; ++i) {
+            if (table[i].state == State::Occupied) {
+                size_t h1 = this->hash1(table[i].data.first);
+                size_t h2 = hash2(table[i].data.first);
+                size_t index = h1;
+                for (size_t j = 0; j < newCapacity; ++j) {
+                    if (newTable[index].state != State::Occupied) {
+                        newTable[index] = table[i];
+                        break;
+                    }
+                    index = (h1 + (j + 1) * h2) % newCapacity;
+                }
+            }
+        }
+        table = std::move(newTable);
     }
 
 public:
+    HashDouble(size_t capacity) : BaseHash<TKey, TVal>(capacity) {
+        table.resize(this->_capacity);
+    }
+    ~HashDouble() = default;
 
-    HashDouble(int size = 11) : _size(size), _table(size) {}
+    void insert(const std::pair<TKey, TVal>& data) {
+        if ((double)this->_size / this->_capacity > 0.7)
+            rehash();
 
-    // ── insert ───────────────────────────────────────────────────────────────
-    // Пробуем ячейки по формуле двойного хеширования пока не найдём свободную.
+        size_t h1 = this->hash1(data.first);
+        size_t h2 = hash2(data.first);
+        size_t index = h1;
+        int firstDeleted = -1;
 
-    bool insert(const TKey& key, const TVal& val) {
-        if (_count >= _size) {
-            std::cout << "Таблица заполнена!\n";
-            return false;
+        for (size_t i = 0; i < this->_capacity; ++i) {
+            if (table[index].state == State::Occupied) {
+                if (table[index].data.first == data.first) {
+                    table[index].data.second = data.second;
+                    return;
+                }
+            }
+            else if (table[index].state == State::Deleted) {
+                if (firstDeleted == -1) firstDeleted = (int)index;
+            }
+            else {
+                size_t targetIndex = (firstDeleted != -1) ? (size_t)firstDeleted : index;
+                table[targetIndex].data = data;
+                table[targetIndex].state = State::Occupied;
+                ++this->_size;
+                return;
+            }
+            index = (h1 + (i + 1) * h2) % this->_capacity;
         }
 
-        int idx = h1(key);
-        int step = h2(key);
-
-        for (int i = 0; i < _size; i++) {
-            Cell& cell = _table[idx];
-
-            // Пустая или удалённая ячейка — вставляем
-            if (cell.state == State::EMPTY || cell.state == State::DELETED) {
-                cell.key = key;
-                cell.val = val;
-                cell.state = State::USED;
-                _count++;
-                return true;
-            }
-
-            // Ключ уже есть — обновляем значение
-            if (cell.state == State::USED && cell.key == key) {
-                cell.val = val;
-                return true;
-            }
-
-            // Коллизия — делаем шаг по второй хеш-функции
-            idx = (idx + step) % _size;
+        if (firstDeleted != -1) {
+            table[firstDeleted].data = data;
+            table[firstDeleted].state = State::Occupied;
+            ++this->_size;
         }
-
-        return false;
     }
 
-    // ── find ─────────────────────────────────────────────────────────────────
-    // Та же формула пробирования.
-    // Останавливаемся если встретили EMPTY — дальше точно нет нужного ключа.
-    // DELETED пропускаем и идём дальше.
-
     TVal* find(const TKey& key) {
-        int idx = h1(key);
-        int step = h2(key);
-
-        for (int i = 0; i < _size; i++) {
-            Cell& cell = _table[idx];
-
-            if (cell.state == State::EMPTY)
+        size_t h1 = this->hash1(key);
+        size_t h2 = hash2(key);
+        size_t index = h1;
+        for (size_t i = 0; i < this->_capacity; ++i) {
+            if (table[index].state == State::Occupied) {
+                if (table[index].data.first == key)
+                    return &table[index].data.second;
+            }
+            else if (table[index].state == State::Empty) {
                 return nullptr;
-
-            if (cell.state == State::USED && cell.key == key)
-                return &cell.val;
-
-            idx = (idx + step) % _size;
+            }
+            index = (h1 + (i + 1) * h2) % this->_capacity;
         }
-
         return nullptr;
     }
 
-    // ── erase ────────────────────────────────────────────────────────────────
-    // Не удаляем физически — помечаем как DELETED.
-    // Если поставить EMPTY, то сломаем цепочки пробирования других ключей.
-
-    bool erase(const TKey& key) {
-        int idx = h1(key);
-        int step = h2(key);
-
-        for (int i = 0; i < _size; i++) {
-            Cell& cell = _table[idx];
-
-            if (cell.state == State::EMPTY)
-                return false;
-
-            if (cell.state == State::USED && cell.key == key) {
-                cell.state = State::DELETED;
-                _count--;
-                return true;
+    int remove(const TKey& key) {
+        size_t h1 = this->hash1(key);
+        size_t h2 = hash2(key);
+        size_t index = h1;
+        for (size_t i = 0; i < this->_capacity; ++i) {
+            if (table[index].state == State::Occupied) {
+                if (table[index].data.first == key) {
+                    table[index].state = State::Deleted;
+                    --this->_size;
+                    return 0;
+                }
             }
-
-            idx = (idx + step) % _size;
+            else if (table[index].state == State::Empty) {
+                return -1;
+            }
+            index = (h1 + (i + 1) * h2) % this->_capacity;
         }
-
-        return false;
-    }
-
-    // ── print ─────────────────────────────────────────────────────────────────
-
-    void print() const {
-        for (int i = 0; i < _size; i++) {
-            std::cout << '[' << i << "] ";
-            if (_table[i].state == State::EMPTY)   std::cout << "---";
-            else if (_table[i].state == State::DELETED) std::cout << "DEL";
-            else std::cout << _table[i].key << ':' << _table[i].val;
-            std::cout << '\n';
-        }
-        std::cout << "Элементов: " << _count << '\n';
+        return -1;
     }
 };
-
-// ── main ─────────────────────────────────────────────────────────────────────
-
-int main() {
-    HashDouble<int, std::string> table(11);
-
-    std::cout << "=== insert: 10 21 32 5 16 ===\n";
-    table.insert(10, "ten");
-    table.insert(21, "twenty-one"); // 21 % 11 = 10 — коллизия с 10!
-    table.insert(32, "thirty-two"); // 32 % 11 = 10 — снова коллизия!
-    table.insert(5, "five");
-    table.insert(16, "sixteen");
-    table.print();
-
-    std::cout << "\nfind(32) = ";
-    std::string* v = table.find(32);
-    std::cout << (v ? *v : "not found") << '\n';
-
-    std::cout << "\n=== erase(21) ===\n";
-    table.erase(21);
-    table.print();
-
-    // Проверяем что find(32) работает после удаления соседа
-    std::cout << "\nfind(32) после удаления 21 = ";
-    v = table.find(32);
-    std::cout << (v ? *v : "not found") << '\n';
-
-    return 0;
-}
