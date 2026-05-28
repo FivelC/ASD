@@ -1,17 +1,6 @@
 #include <iostream>
 #include <queue>
-#include <algorithm> // std::max
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  AVL-дерево
-//
-//  Это то же BST, но после каждой вставки/удаления
-//  дерево само себя балансирует через повороты.
-//
-//  Баланс узла = высота правого поддерева - высота левого.
-//  Допустимые значения: -1, 0, 1.
-//  Если баланс стал -2 или 2 — делаем поворот.
-// ═══════════════════════════════════════════════════════════════════════════
+#include <algorithm>
 
 template <typename TKey, typename TVal>
 class AVLTree {
@@ -20,7 +9,7 @@ class AVLTree {
         std::pair<TKey, TVal> _data;
         Node* _left = nullptr;
         Node* _right = nullptr;
-        int   _height = 1; // высота поддерева с корнем в этом узле
+        int   _height = 1;
 
         Node(const TKey& k, const TVal& v) : _data(k, v) {}
     };
@@ -28,281 +17,138 @@ class AVLTree {
     Node* _root = nullptr;
 
 public:
-
-    AVLTree() = default;
-
-    ~AVLTree() { clear(_root); }
-
-    bool isEmpty() const noexcept { return _root == nullptr; }
-
-    // ── insert ───────────────────────────────────────────────────────────────
-
-    void insert(const TKey& key, const TVal& val) {
-        _root = insertNode(_root, key, val);
+	AVLTree() = default;
+    ~AVLTree() = default;
+    void insert(const TKey& key, const TVal& val)
+    {
+        _root = insert(_root, key, val);
     }
 
-    // ── find ─────────────────────────────────────────────────────────────────
-    // Обычный BST-поиск, AVL не меняет порядок ключей
-
-    TVal* find(const TKey& key) const noexcept {
-        Node* cur = _root;
-        while (cur) {
-            if (key == cur->_data.first) return &cur->_data.second;
-            else if (key < cur->_data.first) cur = cur->_left;
-            else                              cur = cur->_right;
-        }
-        return nullptr;
+    TVal* find(const TKey& k) const
+    {
+        Node* node = find(_root, k);
+        return node ? &node->_data.second : nullptr;
     }
 
-    // ── erase ────────────────────────────────────────────────────────────────
-
-    void erase(const TKey& key) {
-        _root = eraseNode(_root, key);
+    void remove(const TKey& k) {
+        _root = remove(_root, k);
     }
-
-    // ── print_tree (BFS по уровням) ──────────────────────────────────────────
-
-    void print_tree() const noexcept {
-        if (!_root) { std::cout << "(empty)\n"; return; }
-
-        std::queue<Node*> q;
-        q.push(_root);
-
-        while (!q.empty()) {
-            int sz = q.size();
-            for (int i = 0; i < sz; i++) {
-                Node* cur = q.front(); q.pop();
-                std::cout << cur->_data.first << ' ';
-                if (cur->_left)  q.push(cur->_left);
-                if (cur->_right) q.push(cur->_right);
-            }
-            std::cout << '\n';
-        }
+    std::vector<TKey> getKeys() const {
+        std::vector<TKey> keys;
+        inorder(_root, keys);
+        return keys;
     }
-
-    // ── print_ordered (in-order = по возрастанию) ────────────────────────────
-
-    void print_ordered() const noexcept {
-        inorder(_root);
-        std::cout << '\n';
-    }
-
 private:
+    void inorder(Node* p, std::vector<TKey>& out) const {
+        if (!p) return;
+        inorder(p->_left, out);
+        out.push_back(p->_data.first);
+        inorder(p->_right, out);
+    }
+    Node* insert(Node* p, const TKey& key, const TVal& val)
+    {
+        if (!p) return new Node(key, val);
 
-    // ── Вспомогательные функции для высоты и баланса ─────────────────────────
+        if (key < p->_data.first)
+            p->_left = insert(p->_left, key, val);
+        else if (key > p->_data.first)
+            p->_right = insert(p->_right, key, val);
+        else
+            p->_data.second = val;
 
-    int height(Node* n) const {
-        return n ? n->_height : 0;
+        return balance(p);
     }
 
-    void updateHeight(Node* n) {
-        n->_height = 1 + std::max(height(n->_left), height(n->_right));
+    Node* find(Node* p, const TKey& k) const
+    {
+        if (!p) return nullptr;
+
+        if (k < p->_data.first)
+            return find(p->_left, k);
+        else if (k > p->_data.first)
+            return find(p->_right, k);
+        else
+            return p;
     }
 
-    // Баланс = высота правого - высота левого
-    // -2: перевес влево  → нужен правый поворот
-    // +2: перевес вправо → нужен левый поворот
-    int balance(Node* n) const {
-        return n ? height(n->_right) - height(n->_left) : 0;
+    Node* findmin(Node* p) const
+    {
+        return p->_left ? findmin(p->_left) : p;
     }
 
-    // ── Повороты ─────────────────────────────────────────────────────────────
-    //
-    // Правый поворот (когда баланс = -2, дерево "упало" влево):
-    //
-    //      n              l
-    //     / \            / \
-    //    l   C    →     A   n
-    //   / \                / \
-    //  A   B              B   C
-    //
-    Node* rotateRight(Node* n) {
-        Node* l = n->_left;
-        Node* B = l->_right;
-
-        l->_right = n;
-        n->_left = B;
-
-        updateHeight(n); // сначала n, потом l — n теперь ниже
-        updateHeight(l);
-
-        return l; // l становится новым корнем
+    Node* removemin(Node* p)
+    {
+        if (!p->_left) return p->_right;
+        p->_left = removemin(p->_left);
+        return balance(p);
     }
+    Node* remove(Node* p, const TKey& k)
+    {
+        if (!p) return nullptr;
 
-    // Левый поворот (когда баланс = +2, дерево "упало" вправо):
-    //
-    //    n                r
-    //   / \              / \
-    //  A   r      →     n   C
-    //     / \          / \
-    //    B   C        A   B
-    //
-    Node* rotateLeft(Node* n) {
-        Node* r = n->_right;
-        Node* B = r->_left;
+        if (k < p->_data.first)
+            p->_left = remove(p->_left, k);
+        else if (k > p->_data.first)
+            p->_right = remove(p->_right, k);
+        else
+        {
+            Node* left = p->_left;
+            Node* right = p->_right;
+            delete p;
 
-        r->_left = n;
-        n->_right = B;
+            if (!right) return left;
 
-        updateHeight(n);
-        updateHeight(r);
-
-        return r; // r становится новым корнем
-    }
-
-    // ── Балансировка узла ─────────────────────────────────────────────────────
-    //
-    // Вызывается после вставки/удаления.
-    // Проверяем баланс и делаем нужный поворот.
-    //
-    // 4 случая:
-    //
-    // 1. Левый-левый (баланс = -2, левый ребёнок тоже влево):
-    //       один правый поворот
-    //
-    // 2. Левый-правый (баланс = -2, левый ребёнок вправо):
-    //       сначала левый поворот левого ребёнка,
-    //       потом правый поворот узла
-    //
-    // 3. Правый-правый (баланс = +2, правый ребёнок тоже вправо):
-    //       один левый поворот
-    //
-    // 4. Правый-левый (баланс = +2, правый ребёнок влево):
-    //       сначала правый поворот правого ребёнка,
-    //       потом левый поворот узла
-
-    Node* rebalance(Node* n) {
-        updateHeight(n);
-        int b = balance(n);
-
-        // Случай 1: левый-левый
-        if (b == -2 && balance(n->_left) <= 0)
-            return rotateRight(n);
-
-        // Случай 2: левый-правый
-        if (b == -2 && balance(n->_left) > 0) {
-            n->_left = rotateLeft(n->_left);
-            return rotateRight(n);
+            Node* min = findmin(right);
+            min->_right = removemin(right);
+            min->_left = left;
+            return balance(min);
         }
 
-        // Случай 3: правый-правый
-        if (b == 2 && balance(n->_right) >= 0)
-            return rotateLeft(n);
-
-        // Случай 4: правый-левый
-        if (b == 2 && balance(n->_right) < 0) {
-            n->_right = rotateRight(n->_right);
-            return rotateLeft(n);
-        }
-
-        return n; // баланс в норме, ничего не делаем
+        return balance(p);
+    }
+    int height(Node* p) const {
+        return p ? p->_height : 0;
+    }
+    int bfactor(Node* p)
+    {
+        return height(p->_right) - height(p->_left);
     }
 
-    // ── Рекурсивная вставка ───────────────────────────────────────────────────
-    // Вставляем как в обычное BST, потом на обратном пути (возврат из рекурсии)
-    // пересчитываем высоты и балансируем.
-
-    Node* insertNode(Node* n, const TKey& key, const TVal& val) {
-        if (!n) return new Node(key, val);
-
-        if (key == n->_data.first) {
-            n->_data.second = val; // обновляем значение
-            return n;
-        }
-        else if (key < n->_data.first) {
-            n->_left = insertNode(n->_left, key, val);
-        }
-        else {
-            n->_right = insertNode(n->_right, key, val);
-        }
-
-        return rebalance(n);
+    void fixheight(Node* p) {
+		int hl = height(p->_left);
+		int hr = height(p->_right);
+        p->_height = (hl > hr ? hl : hr) + 1;
     }
-
-    // ── Рекурсивное удаление ──────────────────────────────────────────────────
-    // Как в BST: при двух потомках берём максимум левого поддерева.
-    // После — балансируем на обратном пути.
-
-    Node* eraseNode(Node* n, const TKey& key) {
-        if (!n) return nullptr;
-
-        if (key < n->_data.first) {
-            n->_left = eraseNode(n->_left, key);
-        }
-        else if (key > n->_data.first) {
-            n->_right = eraseNode(n->_right, key);
-        }
-        else {
-            // Нашли узел
-
-            // Нет потомков или один потомок
-            if (!n->_left || !n->_right) {
-                Node* child = n->_left ? n->_left : n->_right;
-                delete n;
-                return child; // может быть nullptr
-            }
-
-            // Два потомка: берём максимум левого поддерева
-            Node* maxLeft = n->_left;
-            while (maxLeft->_right)
-                maxLeft = maxLeft->_right;
-
-            n->_data = maxLeft->_data;
-            n->_left = eraseNode(n->_left, maxLeft->_data.first);
-        }
-
-        return rebalance(n);
+    Node* rotateright(Node* p)
+    {
+        Node* q = p->_left;
+        p->_left = q->_right;
+        q->_right = p;
+        fixheight(p);
+        fixheight(q);
+        return q;
     }
-
-    void inorder(Node* n) const noexcept {
-        if (!n) return;
-        inorder(n->_left);
-        std::cout << n->_data.first << ':' << n->_data.second << "  ";
-        inorder(n->_right);
+    Node* rotateleft(Node* q) {
+        Node* p = q->_right;
+        q->_right = p->_left;
+        p->_left = q;
+        fixheight(q);
+        fixheight(p);
+        return p;
     }
-
-    void clear(Node* n) {
-        if (!n) return;
-        clear(n->_left);
-        clear(n->_right);
-        delete n;
+    Node* balance(Node* p)
+    {
+        fixheight(p);
+        if (bfactor(p) == 2)
+        {
+            if (bfactor(p->_right) < 0) p->_right = rotateright(p->_right);
+            return rotateleft(p);
+        }
+        if (bfactor(p) == -2)
+        {
+            if (bfactor(p->_left) > 0) p->_left = rotateleft(p->_left);
+            return rotateright(p);
+        }
+        return p;
     }
 };
-
-// ── main ─────────────────────────────────────────────────────────────────────
-
-int main() {
-    AVLTree<int, std::string> tree;
-
-    // Вставляем по возрастанию — обычное BST стало бы "палкой",
-    // AVL будет балансироваться автоматически
-    std::cout << "=== insert: 1 2 3 4 5 6 7 ===\n";
-    tree.insert(1, "one");
-    tree.insert(2, "two");
-    tree.insert(3, "three"); // здесь сработает левый поворот
-    tree.insert(4, "four");
-    tree.insert(5, "five");  // снова поворот
-    tree.insert(6, "six");
-    tree.insert(7, "seven");
-    tree.print_tree();       // должно быть сбалансированное дерево, не палка
-
-    std::cout << "\n=== упорядоченный вывод ===\n";
-    tree.print_ordered();
-
-    std::cout << "\n=== find(5) = ";
-    std::string* v = tree.find(5);
-    std::cout << (v ? *v : "not found") << '\n';
-
-    std::cout << "\n=== erase(4) ===\n";
-    tree.erase(4);
-    tree.print_tree();
-
-    std::cout << "\n=== erase(2) ===\n";
-    tree.erase(2);
-    tree.print_tree();
-
-    std::cout << "\n=== упорядоченный вывод после удалений ===\n";
-    tree.print_ordered();
-
-    return 0;
-}
