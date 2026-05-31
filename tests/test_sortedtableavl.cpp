@@ -7,49 +7,42 @@ static void checkSorted(const std::vector<TKey>& keys) {
     for (size_t i = 1; i < keys.size(); ++i)
         EXPECT_LT(keys[i - 1], keys[i]);
 }
+TEST(AVLTableTest, Insert102030) {
+    AVLTable<int, std::string> table;
 
+    table.insert(10, "ten");
+    table.insert(20, "twenty");
+    table.insert(30, "thirty");
+    checkSorted(table.getKeys());
+}
+TEST(AVLTableTest, Insert51537) {
+    AVLTable<int, std::string> table;
+
+    table.insert(10, "ten");
+    table.insert(20, "twenty");
+    table.insert(30, "thirty");
+
+    table.insert(5, "five");
+    table.insert(15, "fifteen");
+    table.insert(3, "three");
+    table.insert(7, "seven");
+    checkSorted(table.getKeys());
+}
 TEST(AVLTableTest, InsertFindSize) {
     AVLTable<int, std::string> table;
 
     table.insert(10, "ten");
     table.insert(20, "twenty");
     table.insert(30, "thirty"); 
-    //     20
-    //    /  \
-    //   10   30
+
     table.insert(5, "five");
     table.insert(15, "fifteen"); 
-    //        15
-    //       /  \
-    //      10   20
-    //     /       \
-    //    5         30
     table.insert(3, "three");
     table.insert(7, "seven"); 
-    //        15
-    //       /  \
-    //      7    20
-    //     / \     \
-    //    5   10    30
-    //   /
-    //  3
-    table.insert(1, "one"); 
-    //        15
-    //       /  \
-    //      7    20
-    //     / \     \
-    //    3   10    30
-    //   / \
-    //  1   5
+
     table.insert(25, "twenty-five");
-    table.insert(27, "twenty-seven");
-    //           15
-    //          /  \
-    //         7    25
-    //        / \  /  \
-    //       3  10 20  30
-    //      / \      \
-    //     1   5      27
+    table.insert(31, "thirty-one");
+    table.insert(24, "twenty-four");
     EXPECT_EQ(table.size(), 10);
 
     checkSorted(table.getKeys());
@@ -67,7 +60,6 @@ TEST(AVLTableTest, InsertDuplicateThrows) {
     table.insert(1, "one");
     EXPECT_THROW(table.insert(1, "another"), std::logic_error);
 
-    // дерево не должно было измениться
     EXPECT_EQ(table.size(), 1);
     checkSorted(table.getKeys());
 }
@@ -117,22 +109,31 @@ TEST(AVLTableTest, Remove) {
     EXPECT_EQ(table.size(), 9);
     checkSorted(table.getKeys());
 
-    // Случай 1: удаление листа
     table.remove(1);
     EXPECT_EQ(table.find(1), nullptr);
     ASSERT_NE(table.find(2), nullptr);
     EXPECT_EQ(table.size(), 8);
     checkSorted(table.getKeys());
+    //           5
+    //         /   \
+    //        3     8
+    //       / \   / \
+    //      2   4 7   9
+    //           /
+    //          6
 
-    // Случай 2: удаление узла с одним левым потомком
     table.remove(7);
     EXPECT_EQ(table.find(7), nullptr);
     ASSERT_NE(table.find(6), nullptr);
     ASSERT_NE(table.find(8), nullptr);
     EXPECT_EQ(table.size(), 7);
     checkSorted(table.getKeys());
+    //           5
+    //         /   \
+    //        3     8
+    //       / \   / \
+    //      2   4 6   9
 
-    // Случай 3: удаление узла с одним правым потомком
     table.insert(10, "ten");
     table.remove(9);
     EXPECT_EQ(table.find(9), nullptr);
@@ -141,19 +142,26 @@ TEST(AVLTableTest, Remove) {
     EXPECT_EQ(table.size(), 7);
     checkSorted(table.getKeys());
 
-    // Случай 4: удаление узла с двумя потомками
     table.remove(3);
     EXPECT_EQ(table.find(3), nullptr);
     ASSERT_NE(table.find(2), nullptr);
     ASSERT_NE(table.find(4), nullptr);
     checkSorted(table.getKeys());
-
+    //           5
+    //         /   \
+    //        4     8
+    //       /     / \
+    //      2     6   10
     table.remove(5);
     EXPECT_EQ(table.find(5), nullptr);
     ASSERT_NE(table.find(4), nullptr);
     ASSERT_NE(table.find(2), nullptr);
     ASSERT_NE(table.find(8), nullptr);
-
+    //           6
+    //         /   \
+    //        4     8
+    //       /       \
+    //      2         10
     EXPECT_EQ(table.size(), 5);
     EXPECT_EQ(*table.find(2), "two");
     EXPECT_EQ(*table.find(4), "four");

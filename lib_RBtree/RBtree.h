@@ -1,7 +1,7 @@
 #include <iostream>
 #include <queue>
 #include <algorithm>
-
+#include <vector>
 template <typename TKey, typename TVal>
 class RBTree {
     enum Color { RED, BLACK };
@@ -20,7 +20,36 @@ class RBTree {
 
     Node* _root = nullptr;
 
-    // ── вращения ──────────────────────────────────────────────
+public:
+    bool insert(const TKey& k, const TVal& v) {
+        Node* z = new Node(k, v);
+        if (!bstInsert(z))
+            return false;
+        insertFixup(z);
+        _root->_color = BLACK;
+        return true;
+    }
+
+    TVal* find(const TKey& k) const
+    {
+        Node* node = find(_root, k);
+        return node ? &node->_data.second : nullptr;
+    }
+
+    void print() const { printLevel(_root); }
+
+    std::vector<TKey> getKeys() const {
+        std::vector<TKey> keys;
+        inorder(_root, keys);
+        return keys;
+    }
+private:
+    void inorder(Node* p, std::vector<TKey>& out) const {
+        if (!p) return;
+        inorder(p->_left, out);
+        out.push_back(p->_data.first);
+        inorder(p->_right, out);
+    }
     void rotateLeft(Node* x) {
         Node* y = x->_right;
         x->_right = y->_left;
@@ -45,71 +74,66 @@ class RBTree {
         x->_parent = y;
     }
 
-    // ── fixup после вставки ───────────────────────────────────
     void insertFixup(Node* z) {
-        while (z->_parent && z->_parent->_color == RED) {
-            Node* gp = z->_parent->_parent;   // дед
-            if (z->_parent == gp->_left) {
-                Node* uncle = gp->_right;
-                if (uncle && uncle->_color == RED) {
-                    // случай 1: дядя красный → перекраска
-                    z->_parent->_color = BLACK;
-                    uncle->_color = BLACK;
-                    gp->_color = RED;
-                    z = gp;
-                }
-                else {
-                    if (z == z->_parent->_right) {
-                        // случай 2: z — правый ребёнок → левый поворот
-                        z = z->_parent;
-                        rotateLeft(z);
-                    }
-                    // случай 3: z — левый ребёнок → правый поворот
-                    z->_parent->_color = BLACK;
-                    gp->_color = RED;
-                    rotateRight(gp);
-                }
+        if (!z->_parent || z->_parent->_color == BLACK)
+            return;
+
+        Node* gp = z->_parent->_parent;
+
+        if (z->_parent == gp->_left) {
+            Node* uncle = gp->_right;
+            if (uncle && uncle->_color == RED) {
+                z->_parent->_color = BLACK;
+                uncle->_color = BLACK;
+                gp->_color = RED;
+                insertFixup(gp);
             }
             else {
-                // симметрично (parent — правый ребёнок деда)
-                Node* uncle = gp->_left;
-                if (uncle && uncle->_color == RED) {
-                    z->_parent->_color = BLACK;
-                    uncle->_color = BLACK;
-                    gp->_color = RED;
-                    z = gp;
+                if (z == z->_parent->_right) {    
+                    z = z->_parent;
+                    rotateLeft(z);
                 }
-                else {
-                    if (z == z->_parent->_left) {
-                        z = z->_parent;
-                        rotateRight(z);
-                    }
-                    z->_parent->_color = BLACK;
-                    gp->_color = RED;
-                    rotateLeft(gp);
-                }
+                z->_parent->_color = BLACK;          
+                gp->_color = RED;
+                rotateRight(gp);
             }
         }
-        _root->_color = BLACK;   // инвариант: корень всегда чёрный
+        else {  
+            Node* uncle = gp->_left;
+            if (uncle && uncle->_color == RED) {   
+                z->_parent->_color = BLACK;
+                uncle->_color = BLACK;
+                gp->_color = RED;
+                insertFixup(gp);
+            }
+            else {
+                if (z == z->_parent->_left) {       
+                    z = z->_parent;
+                    rotateRight(z);
+                }
+                z->_parent->_color = BLACK;         
+                gp->_color = RED;
+                rotateLeft(gp);
+            }
+        }
     }
 
-    // ── вставка (рекурсивный BST + fixup) ────────────────────
-    void bstInsert(Node* z) {
+    bool bstInsert(Node* z) {
         Node* parent = nullptr;
         Node* cur = _root;
         while (cur) {
             parent = cur;
             if (z->_data.first < cur->_data.first) cur = cur->_left;
             else if (z->_data.first > cur->_data.first) cur = cur->_right;
-            else { cur->_data.second = z->_data.second; delete z; return; }
+            else { cur->_data.second = z->_data.second; delete z; return false; }
         }
         z->_parent = parent;
-        if (!parent)                          _root = z;
+        if (!parent) _root = z;
         else if (z->_data.first < parent->_data.first) parent->_left = z;
-        else                                       parent->_right = z;
+        else parent->_right = z;
+        return true;
     }
 
-    // ── print (BFS по уровням) ────────────────────────────────
     void printLevel(Node* root) const {
         if (!root) return;
         std::queue<Node*> q;
@@ -127,15 +151,16 @@ class RBTree {
         }
     }
 
-public:
-    void insert(const TKey& k, const TVal& v) {
-        Node* z = new Node(k, v);   // новый узел — всегда красный
-        bstInsert(z);
-        if (z->_parent)             // если узел не был дубликатом
-            insertFixup(z);
-        else if (_root == z)
-            _root->_color = BLACK;
+    Node* find(Node* p, const TKey& k) const
+    {
+        if (!p) return nullptr;
+
+        if (k < p->_data.first)
+            return find(p->_left, k);
+        else if (k > p->_data.first)
+            return find(p->_right, k);
+        else
+            return p;
     }
 
-    void print() const { printLevel(_root); }
 };

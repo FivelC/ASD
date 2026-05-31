@@ -1,3 +1,25 @@
+#define RBtree
+#ifdef RBtree
+#include <iostream>
+#include <string>
+#include "../lib_RBtree/RBtree.h" 
+
+int main() {
+    RBTree<int, std::string> tree;
+
+    int keys[] = { 10, 20, 30, 5, 15, 3, 7, 25, 31, 24 };
+    for (int k : keys)
+        tree.insert(k, std::to_string(k));
+
+    std::cout << "RBTree:\n";
+    tree.print();
+
+    return 0;
+}
+
+#endif
+
+#ifdef Graph
 #include <iostream>
 #include <vector>
 #include <list>
@@ -36,15 +58,15 @@ public:
     }
 
     void delete_edge(Edge e) {
-        _adj[e.from].remove_if([&](const std::pair<int, int>& p) { return p.first == e.to; });
+        remove_neighbor(_adj[e.from], e.to);
         if (!_directed)
-            _adj[e.to].remove_if([&](const std::pair<int, int>& p) { return p.first == e.from; });
+            remove_neighbor(_adj[e.to], e.from);
     }
 
     void delete_vertex(int v) {
         _adj[v].clear();
         for (int u = 0; u < _n; ++u)
-            _adj[u].remove_if([&](const std::pair<int, int>& p) { return p.first == v; });
+            remove_neighbor(_adj[u], v);
     }
 
     int size() const { return _n; }
@@ -58,17 +80,17 @@ public:
             std::cout << "\n";
         }
     }
+private:
+    void remove_neighbor(std::list<std::pair<int, int>>& lst, int target) {
+        for (auto it = lst.begin(); it != lst.end(); ) {
+            if (it->first == target)
+                it = lst.erase(it);
+            else
+                ++it;
+        }
+    }
 };
 
-// ═════════════════════════════════════════════════════════════
-// Способ 2: список рёбер
-// ═════════════════════════════════════════════════════════════
-/*
- * _edges: (1->4,1) (4->1,1) (1->2,1) (2->1,1) ...
- *
- * Плюсы:  просто, легко перебирать рёбра
- * Минусы: поиск соседей O(M)
- */
 class EdgeListGraph {
     int _n;
     bool _directed, _weighted;
@@ -93,19 +115,16 @@ public:
     }
 
     void delete_edge(Edge e) {
-        _edges.erase(std::remove_if(_edges.begin(), _edges.end(),
-            [&](const Edge& x) { return x.from == e.from && x.to == e.to; }),
-            _edges.end());
+        remove_directed_edge(e.from, e.to);
         if (!_directed)
-            _edges.erase(std::remove_if(_edges.begin(), _edges.end(),
-                [&](const Edge& x) { return x.from == e.to && x.to == e.from; }),
-                _edges.end());
+            remove_directed_edge(e.to, e.from);
     }
 
     void delete_vertex(int v) {
-        _edges.erase(std::remove_if(_edges.begin(), _edges.end(),
-            [&](const Edge& e) { return e.from == v || e.to == v; }),
-            _edges.end());
+        std::vector<Edge> kept; 
+        for (size_t i = 0; i < _edges.size(); ++i)
+            if (_edges[i].from != v && _edges[i].to != v) kept.push_back(_edges[i]);
+        _edges = kept;                          
     }
 
     void print() const {
@@ -113,6 +132,14 @@ public:
             std::cout << "(" << _edges[i].from << "->" << _edges[i].to
             << ", w=" << _edges[i].weight << ") ";
         std::cout << "\n";
+    }
+private:
+    void remove_directed_edge(int from, int to) {
+        std::vector<Edge> kept;
+        for (size_t i = 0; i < _edges.size(); ++i)
+            if (!(_edges[i].from == from && _edges[i].to == to))
+                kept.push_back(_edges[i]);
+        _edges = kept;
     }
 };
 
@@ -160,101 +187,6 @@ std::vector<int> dijkstra(const AdjacencyListGraph& g, int start, int end) {
     return path;
 }
 
-//int main() {
-//    /*
-//     *    4 ---- 6
-//     *   / \      \
-//     *  1   \      3
-//     *   \___ 2 __/ \
-//     *       /       \
-//     *      5 -------- 0
-//     */
-//    std::cout << "=== List-Smezh ===\n";
-//    AdjacencyListGraph ag({
-//        {{1,4},1}, {{1,2},1}, {{4,6},1},
-//        {{4,2},1}, {{6,3},1}, {{2,3},1},
-//        {{2,5},1}, {{3,0},1}, {{5,0},1}
-//        }, 7);
-//    ag.print();
-//
-//    std::cout << "\nadd_edge(0, 6):\n";
-//    ag.add_edge(0, 6);
-//    ag.print();
-//
-//    std::cout << "\ndelete_edge(2->5):\n";
-//    ag.delete_edge({ 2, 5, 1 });
-//    ag.print();
-//
-//    std::cout << "\ndelete_vertex(3):\n";
-//    ag.delete_vertex(3);
-//    ag.print();
-//
-//    std::cout << "\n=== List-Edge ===\n";
-//    EdgeListGraph eg({
-//        {{0,1},5}, {{0,2},3}, {{1,3},2}, {{2,3},7}
-//        }, 4, true, true);
-//    eg.print();
-//
-//    std::cout << "\nadd_edge(3->0, w=1):\n";
-//    eg.add_edge(3, 0, 1);
-//    eg.print();
-//
-//    std::cout << "\ndelete_edge(0->2):\n";
-//    eg.delete_edge({ 0, 2, 3 });
-//    eg.print();
-//
-//    std::cout << "\ndelete_vertex(1):\n";
-//    eg.delete_vertex(1);
-//    eg.print();
-//
-//    // ── Дейкстра ─────────────────────────────────────────────
-//    /*
-//     * Взвешенный граф:
-//     *
-//     *       2       3
-//     *   0 ----- 1 ----- 2
-//     *   |               |
-//     * 6 |               | 1
-//     *   |               |
-//     *   3 ----- 4 ----- 5
-//     *       5       2
-//     *
-//     * Кратчайший 0→5: 0→1→2→5, длина = 2+3+1 = 6
-//     */
-//    std::cout << "\n=== Дейкстра (взвешенный) ===\n";
-//    AdjacencyListGraph wg({
-//        {{0,1},2}, {{1,2},3}, {{0,3},6},
-//        {{3,4},5}, {{4,5},2}, {{2,5},1}
-//        }, 6, false, true);
-//    wg.print();
-//
-//    std::vector<int> p1 = dijkstra(wg, 0, 5);
-//    std::cout << "\nПуть 0->5: ";
-//    for (size_t i = 0; i < p1.size(); ++i)
-//        std::cout << p1[i] << (i + 1 < p1.size() ? " -> " : "\n");
-//
-//    std::cout << "\n=== Дейкстра (невзвешенный) ===\n";
-//    AdjacencyListGraph ug({
-//        {{0,1},1}, {{1,2},1}, {{0,3},1},
-//        {{3,4},1}, {{4,5},1}, {{2,5},1}
-//        }, 6, false, false);
-//    ug.print();
-//
-//    std::vector<int> p2 = dijkstra(ug, 0, 5);
-//    std::cout << "\nПуть 0->5: ";
-//    for (size_t i = 0; i < p2.size(); ++i)
-//        std::cout << p2[i] << (i + 1 < p2.size() ? " -> " : "\n");
-//
-//    std::cout << "\n=== Дейкстра (путь не существует) ===\n";
-//    AdjacencyListGraph dg(4, true);
-//    dg.add_edge(0, 1);
-//    dg.add_edge(2, 3);
-//    std::vector<int> p3 = dijkstra(dg, 0, 3);
-//    if (p3.empty())
-//        std::cout << "Путь 0->3 не существует\n";
-//
-//    return 0;
-//}
 int main() {
     /*
      *    4 ---- 6
@@ -350,3 +282,4 @@ int main() {
 
     return 0;
 }
+#endif
